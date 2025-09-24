@@ -4,7 +4,7 @@ Simple alarm clock android app to help you ward off sleep for good 😈.
 
 ## Members
 
-- Karmen Ott [@inugami-dev64](https://github.com/inugami-dev64)
+- Lead programmer - Karmen Ott [@inugami-dev64](https://github.com/inugami-dev64)
 - Rasmus Lille [@Virteso](https://github.com/Virteso)
 - Editor - Kristjan Karl Pevgonen [@KristjanKarlPevgonen](https://github.com/KristjanKarlPevgonen)
 - Project lead - Aksel Martin Muru [@a-m-muru](https://github.com/a-m-muru)
