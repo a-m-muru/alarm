@@ -1,4 +1,4 @@
-# Hardcore alarmclock
+# alarm++
 
 Simple alarm clock android app to help you ward off sleep for good 😈.
 
@@ -7,5 +7,23 @@ Simple alarm clock android app to help you ward off sleep for good 😈.
 - Karmen Ott [@inugami-dev64](https://github.com/inugami-dev64)
 - Rasmus Lille [@Virteso](https://github.com/Virteso)
 - Kristjan Karl Pevgonen [@KristjanKarlPevgonen](https://github.com/KristjanKarlPevgonen)
-- Aksel Martin Muru [@a-m-muru](https://github.com/a-m-muru)
+- Project lead - Aksel Martin Muru [@a-m-muru](https://github.com/a-m-muru)
 - Kauri Remm [@Kauri1](https://github.com/Kauri1)
+
+## Features
+
+- Simple tutorial on using the app
+- Possible to set alarm to a weekday and time
+- Save multiple alarms
+- Disable and enable alarms
+- Perform tasks using phone sensors and other minigames to turn off alarm
+- Accessibility options in settings
+- Select ringtone from local device
+- Set a specific ringtone
+- Keep a streak by waking up every day
+- Lore
+
+## Tools & frameworks
+
+- Kotlin
+- Android Studio
