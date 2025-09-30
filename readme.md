@@ -4,15 +4,14 @@ Simple alarm clock android app to help you ward off sleep for good 😈.
 
 ## Members
 
-- Karmen Ott [@inugami-dev64](https://github.com/inugami-dev64)
-- Rasmus Lille [@Virteso](https://github.com/Virteso)
-- Kristjan Karl Pevgonen [@KristjanKarlPevgonen](https://github.com/KristjanKarlPevgonen)
+- Lead programmer - Karmen Ott [@inugami-dev64](https://github.com/inugami-dev64)
+- Researcher - Rasmus Lille [@Virteso](https://github.com/Virteso)
+- Editor - Kristjan Karl Pevgonen [@KristjanKarlPevgonen](https://github.com/KristjanKarlPevgonen)
 - Project lead - Aksel Martin Muru [@a-m-muru](https://github.com/a-m-muru)
-- Kauri Remm [@Kauri1](https://github.com/Kauri1)
+- Presenter - Kauri Remm [@Kauri1](https://github.com/Kauri1)
 
 ## Features
 
-- Simple tutorial on using the app
 - Possible to set alarm to a weekday and time
 - Save multiple alarms
 - Disable and enable alarms
@@ -22,6 +21,7 @@ Simple alarm clock android app to help you ward off sleep for good 😈.
 - Set a specific ringtone
 - Keep a streak by waking up every day
 - Lore
+- Simple tutorial on using the app
 
 ## Tools & frameworks
 
