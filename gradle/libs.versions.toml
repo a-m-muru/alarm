@@ -8,8 +8,12 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.9.3"
 activityCompose = "1.10.1"
 composeBom = "2024.09.00"
+windowVersion = "1.5.0"
+workManagerVersion = "2.10.5"
 
 [libraries]
+androidx-window = { group = "androidx.window", name = "window", version.ref = "windowVersion"}
+androidx-work-runtime = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManagerVersion"}
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
