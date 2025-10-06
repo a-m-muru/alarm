@@ -1,26 +1,40 @@
 package ee.ut.cs.alarm.screens
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.data.AlarmRepository
+import ee.ut.cs.alarm.data.DayOfWeek
+import ee.ut.cs.alarm.service.WorkManagerAlarmScheduler
+import kotlinx.coroutines.launch
+import android.util.Log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlarmsScreen() {
-    // Sample alarm data for now
-    val alarms = remember {
-        listOf(
-            AlarmItem("07:00", "Monday", true),
-            AlarmItem("08:30", "Tuesday", false),
-            AlarmItem("09:15", "Wednesday", true)
-        )
+fun AlarmsScreen(navController: androidx.navigation.NavHostController? = null) {
+    val context = LocalContext.current
+    val alarmRepository = remember { AlarmRepository.getInstance(context) }
+    val alarmScheduler = remember { WorkManagerAlarmScheduler(context) }
+    val coroutineScope = rememberCoroutineScope()
+    
+    val alarms by alarmRepository.alarms.collectAsState(initial = emptyList())
+
+    LaunchedEffect(alarms) {
+        Log.d("AlarmsScreen", "Alarms changed: ${alarms.size} alarms")
+        alarmScheduler.rescheduleAllAlarms(alarms)
     }
 
     Column(
@@ -51,7 +65,22 @@ fun AlarmsScreen() {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(alarms) { alarm ->
-                    AlarmCard(alarm = alarm)
+                    AlarmCard(
+                        alarm = alarm,
+                        onToggleEnabled = { enabled ->
+                            coroutineScope.launch {
+                                alarmRepository.updateAlarmEnabled(alarm.id, enabled)
+                            }
+                        },
+                        onEdit = { 
+                            navController?.navigate("edit_alarm/${alarm.id}")
+                        },
+                        onDelete = {
+                            coroutineScope.launch {
+                                alarmRepository.deleteAlarm(alarm.id)
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -59,7 +88,15 @@ fun AlarmsScreen() {
 }
 
 @Composable
-fun AlarmCard(alarm: AlarmItem) {
+fun AlarmCard(
+    alarm: Alarm,
+    onToggleEnabled: (Boolean) -> Unit,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
+    val timeString = String.format("%02d:%02d", alarm.hour, alarm.minute)
+    val daysString = alarm.days.joinToString(", ") { it.displayName }
+    
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -71,29 +108,50 @@ fun AlarmCard(alarm: AlarmItem) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = alarm.time,
+                    text = timeString,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = alarm.day,
+                    text = daysString,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                if (alarm.label != null) {
+                    Text(
+                        text = alarm.label,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
             
-            Switch(
-                checked = alarm.isEnabled,
-                onCheckedChange = { /* TODO: Handle toggle */ }
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onEdit) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit alarm"
+                    )
+                }
+                
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete alarm",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+                
+                Switch(
+                    checked = alarm.enabled,
+                    onCheckedChange = onToggleEnabled
+                )
+            }
         }
     }
 }
-
-data class AlarmItem(
-    val time: String,
-    val day: String,
-    val isEnabled: Boolean
-)

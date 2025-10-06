@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import ee.ut.cs.alarm.screens.AboutScreen
 import ee.ut.cs.alarm.screens.AddAlarmScreen
 import ee.ut.cs.alarm.screens.AlarmsScreen
+import ee.ut.cs.alarm.screens.EditAlarmScreen
 
 @Composable
 fun AlarmNavigation(
@@ -20,10 +21,17 @@ fun AlarmNavigation(
         modifier = modifier
     ) {
         composable(Screen.Alarms.route) {
-            AlarmsScreen()
+            AlarmsScreen(navController = navController)
         }
         composable(Screen.AddAlarm.route) {
-            AddAlarmScreen()
+            AddAlarmScreen(navController = navController)
+        }
+        composable(Screen.EditAlarm.route) { backStackEntry ->
+            val alarmId = backStackEntry.arguments?.getString("alarmId")
+            EditAlarmScreen(
+                alarmId = alarmId ?: "",
+                onNavigateBack = { navController.popBackStack() }
+            )
         }
         composable(Screen.About.route) {
             AboutScreen()
@@ -34,5 +42,6 @@ fun AlarmNavigation(
 sealed class Screen(val route: String) {
     object Alarms : Screen("alarms")
     object AddAlarm : Screen("add_alarm")
+    object EditAlarm : Screen("edit_alarm/{alarmId}")
     object About : Screen("about")
 }

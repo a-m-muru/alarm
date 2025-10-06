@@ -1,0 +1,3 @@
+# This is a placeholder for alarm sound
+# In a real implementation, you would add an actual audio file here
+# For now, the app will fall back to the system default alarm sound

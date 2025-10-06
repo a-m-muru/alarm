@@ -13,17 +13,28 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ee.ut.cs.alarm.components.BottomNavigationBar
 import ee.ut.cs.alarm.navigation.AlarmNavigation
+import ee.ut.cs.alarm.permissions.PermissionManager
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 
 class MainActivity : ComponentActivity() {
+    private lateinit var permissionManager: PermissionManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        
+        permissionManager = PermissionManager(this)
+        
         setContent {
             AlarmTheme {
                 val navController = rememberNavController()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
+
+                // Request permissions when the app starts
+                LaunchedEffect(Unit) {
+                    permissionManager.requestAllPermissions()
+                }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),

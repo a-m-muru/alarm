@@ -1,26 +1,46 @@
 package ee.ut.cs.alarm.screens
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.data.AlarmRepository
+import ee.ut.cs.alarm.data.DayOfWeek
+import ee.ut.cs.alarm.navigation.Screen
+import ee.ut.cs.alarm.components.ClockTimePicker
+import androidx.navigation.NavController
+import kotlinx.coroutines.launch
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddAlarmScreen() {
-    var selectedTime by remember { mutableStateOf("07:00") }
-    var selectedDay by remember { mutableStateOf("Monday") }
+fun AddAlarmScreen(navController: NavController? = null) {
+    val context = LocalContext.current
+    val alarmRepository = remember { AlarmRepository.getInstance(context) }
+    val coroutineScope = rememberCoroutineScope()
+    
+    var selectedHour by remember { mutableStateOf(7) }
+    var selectedMinute by remember { mutableStateOf(0) }
+    var selectedDays by remember { mutableStateOf(setOf<DayOfWeek>()) }
+    var label by remember { mutableStateOf("") }
     var isEnabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
             text = "Add New Alarm",
@@ -37,57 +57,51 @@ fun AddAlarmScreen() {
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "Time",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
-                
-                TextField(
-                    value = selectedTime,
-                    onValueChange = { selectedTime = it },
-                    label = { Text("HH:MM") },
-                    modifier = Modifier.fillMaxWidth()
+                ClockTimePicker(
+                    hour = selectedHour,
+                    minute = selectedMinute,
+                    is24Hour = false, // Use 12-hour format with AM/PM
+                    onHourChange = { selectedHour = it },
+                    onMinuteChange = { selectedMinute = it }
                 )
 
                 Text(
-                    text = "Day",
+                    text = "Days",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
 
-                val days = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-                var expanded by remember { mutableStateOf(false) }
-                
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = { expanded = !expanded }
+                // Day selection chips
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    TextField(
-                        value = selectedDay,
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Select Day") },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-                    ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        days.forEach { day ->
-                            DropdownMenuItem(
-                                text = { Text(day) },
-                                onClick = {
-                                    selectedDay = day
-                                    expanded = false
+                    DayOfWeek.values().forEach { day ->
+                        FilterChip(
+                            onClick = {
+                                selectedDays = if (day in selectedDays) {
+                                    selectedDays - day
+                                } else {
+                                    selectedDays + day
                                 }
-                            )
-                        }
+                            },
+                            label = { 
+                                Text(
+                                    text = day.displayName,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                ) 
+                            },
+                            selected = day in selectedDays,
+                            modifier = Modifier.weight(1f)
+                        )
                     }
                 }
+
+                TextField(
+                    value = label,
+                    onValueChange = { label = it },
+                    label = { Text("Label (optional)") },
+                    modifier = Modifier.fillMaxWidth()
+                )
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -110,10 +124,50 @@ fun AddAlarmScreen() {
         Spacer(modifier = Modifier.height(32.dp))
 
         Button(
-            onClick = { /* TODO: Save alarm */ },
+            onClick = { 
+                if (selectedDays.isNotEmpty()) {
+                    val alarm = Alarm(
+                        hour = selectedHour,
+                        minute = selectedMinute,
+                        days = selectedDays.toList(),
+                        enabled = isEnabled,
+                        label = label.takeIf { it.isNotBlank() }
+                    )
+                    coroutineScope.launch {
+                        alarmRepository.saveAlarm(alarm)
+                        navController?.navigate(Screen.Alarms.route)
+                    }
+                }
+            },
+            enabled = selectedDays.isNotEmpty(),
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Save Alarm", fontSize = 16.sp)
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        Button(
+            onClick = { 
+                // Test alarm that triggers in 10 seconds
+                val testAlarm = Alarm(
+                    hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY),
+                    minute = Calendar.getInstance().get(Calendar.MINUTE) + 1, // 1 minute from now
+                    days = listOf(DayOfWeek.values()[Calendar.getInstance().get(Calendar.DAY_OF_WEEK) - 1]),
+                    enabled = true,
+                    label = "Test Alarm"
+                )
+                coroutineScope.launch {
+                    alarmRepository.saveAlarm(testAlarm)
+                    navController?.navigate(Screen.Alarms.route)
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.secondary
+            )
+        ) {
+            Text("Test Alarm (1 min)", fontSize = 16.sp)
         }
     }
 }

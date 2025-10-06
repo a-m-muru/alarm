@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option java_package = "ee.ut.cs.alarm.proto";
+option java_multiple_files = true;
+
+message AlarmProto {
+  string id = 1;
+  int32 hour = 2;
+  int32 minute = 3;
+  repeated DayOfWeekProto days = 4;
+  bool enabled = 5;
+  string ringtone_uri = 6;
+  string label = 7;
+  int64 created_at = 8;
+}
+
+message DayOfWeekProto {
+  int32 value = 1; // 1 = Monday, 2 = Tuesday, ..., 7 = Sunday
+}
+
+message AlarmListProto {
+  repeated AlarmProto alarms = 1;
+}
