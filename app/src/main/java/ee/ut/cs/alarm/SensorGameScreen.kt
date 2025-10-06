@@ -70,6 +70,7 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
 
     // Attempt to get the accelerometer and light sensor
+    //val accelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) }
     val linearAccelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) }
     //val gyroscope = remember { sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
     val orientation = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) }
@@ -85,8 +86,14 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
     var doLog by remember { mutableStateOf(false) }
     var paused by remember { mutableStateOf(false) }
 
-    var position by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
-    var velocity by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
+    var isUpsideDown by remember { mutableStateOf(false) }
+    var nextPos by remember { mutableStateOf(false) }
+    var worldUpVector by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
+
+
+
+    //var position by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
+    //var velocity by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
     var lastTime by remember { mutableStateOf(System.currentTimeMillis()) }
 
 
@@ -109,24 +116,45 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
 
                             //position = position + velocity * deltaTime
 
-                            position = position + getDistance(accelerometerData, gyroscopeData, deltaTime)
+                            //position = position + getDistance(accelerometerData, gyroscopeData, deltaTime)
 
 
                             if (doLog) {
                                 log += "ACC: " + acc + " l: " + acc.length() + "\n"
                                 print(event.values)
                                 //log += "VEL: " + velocity.toString() + "\n"
-                                log += "POS: " + position.toString() + "\n"
+                                //log += "POS: " + position.toString() + "\n"
                             }
                         }
                         Sensor.TYPE_ROTATION_VECTOR -> {
                             gyroscopeData = Vec3(event.values[0], event.values[1], event.values[2])
+
+                            val rotationMatrix = FloatArray(9)
+                            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+
+                            val deviceUpVector = floatArrayOf(0f, 1f, 0f)
+
+                            //val worldUpVector = FloatArray(3)
+
+
+                            worldUpVector.x = rotationMatrix[0] * deviceUpVector[0] + rotationMatrix[1] * deviceUpVector[1] + rotationMatrix[2] * deviceUpVector[2]
+                            worldUpVector.y = rotationMatrix[3] * deviceUpVector[0] + rotationMatrix[4] * deviceUpVector[1] + rotationMatrix[5] * deviceUpVector[2]
+                            worldUpVector.z = rotationMatrix[6] * deviceUpVector[0] + rotationMatrix[7] * deviceUpVector[1] + rotationMatrix[8] * deviceUpVector[2]
+
+
+                            isUpsideDown = worldUpVector.z < 0
+
+
                             if (doLog) {
+                                // You can log the Z-value to see how it changes
                                 log += "ORI: " + event.values.toSet() + "\n"
+                                log += "World: ${worldUpVector}\n"
                             }
+
                         }
                     }
-                    if (accelerometerData.length() > 10){
+                    if (accelerometerData.length() > 30 && (nextPos == isUpsideDown)){
+                        nextPos = !nextPos
                         count++
                     }
                 }
@@ -169,8 +197,11 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
         Text(text = if (orientation != null) gyroscopeData.toString() else "Not available", fontSize = 18.sp)
 
         Spacer(modifier = Modifier.height(24.dp))
-        Text(text = "Position:")
-        Text(text = position.toString(), fontSize = 18.sp)
+        //Text(text = "Position:")
+        //Text(text = position.toString(), fontSize = 18.sp)
+        Text(text = "World up: ${if (isUpsideDown) "yes" else "no"}", fontSize = 18.sp)
+        Text(text = worldUpVector.toString(), fontSize = 18.sp)
+
 
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -192,12 +223,12 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
             Text("Log")
         }
 
-        Button(onClick = {
-            position = Vec3(0f, 0f, 0f)
-            velocity = Vec3(0f, 0f, 0f)
-        }) {
-            Text("Reset Position")
-        }
+        //Button(onClick = {
+        //    position = Vec3(0f, 0f, 0f)
+        //    velocity = Vec3(0f, 0f, 0f)
+        //}) {
+        //    Text("Reset Position")
+        //}
 
         Spacer(modifier = Modifier.height(48.dp))
         Text(text = "Log:")
