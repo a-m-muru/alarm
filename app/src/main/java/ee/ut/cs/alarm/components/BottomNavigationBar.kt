@@ -28,7 +28,6 @@ fun BottomNavigationBar(
                     fontWeight = FontWeight.Medium
                 )
             },
-            label = { Text("Alarms") },
             selected = currentRoute == Screen.Alarms.route,
             onClick = { onNavigate(Screen.Alarms.route) }
         )
@@ -54,7 +53,6 @@ fun BottomNavigationBar(
                     fontWeight = FontWeight.Medium
                 )
             },
-            label = { Text("About") },
             selected = currentRoute == Screen.About.route,
             onClick = { onNavigate(Screen.About.route) }
         )
