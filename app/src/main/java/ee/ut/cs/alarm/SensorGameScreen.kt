@@ -153,7 +153,7 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
 
                         }
                     }
-                    if (accelerometerData.length() > 30 && (nextPos == isUpsideDown)){
+                    if (accelerometerData.length() > 30 && (nextPos == isUpsideDown) && (worldUpVector.z > 0.7 || worldUpVector.z < -0.8 )){
                         nextPos = !nextPos
                         count++
                     }
