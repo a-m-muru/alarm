@@ -1,6 +1,8 @@
 # Report 
 
-Step 2 of Mobile Application Development - Alarm++ team
+Step 2 of Mobile Application Development - Alarm++ team.
+
+Current functional code in "AI-Alarm" branch on Git.
 
 ## Local data storage
 
