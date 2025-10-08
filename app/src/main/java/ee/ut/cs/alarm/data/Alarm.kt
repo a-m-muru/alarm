@@ -1,5 +1,7 @@
 package ee.ut.cs.alarm.data
 
+import android.os.Parcel
+import android.os.Parcelable
 import kotlin.experimental.or
 
 object Day {
@@ -12,7 +14,27 @@ object Day {
     const val SUNDAY: Byte = 0x40
 }
 
-class Alarm(time: UInt, var days: Byte, var enabled: Boolean = true)
+class Alarm(time: UInt, var days: Byte, var enabled: Boolean = true)/* : Parcelable {
+
+    companion object CREATOR: Parcelable.Creator<Alarm?> {
+        override fun createFromParcel(source: Parcel?): Alarm? {
+            val x  = source?.readInt()
+            return Alarm(x as UInt, 0)
+        }
+
+        override fun newArray(size: Int): Array<out Alarm?>? {
+            TODO("Not yet implemented")
+        }
+    }
+
+    override fun describeContents(): Int {
+        return Parcelable.CONTENTS_FILE_DESCRIPTOR
+    }
+
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeInt(1)
+    }
+}*/
 
 
 val al = Alarm(3600u, Day.MONDAY or Day.TUESDAY)

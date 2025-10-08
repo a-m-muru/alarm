@@ -22,11 +22,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ee.ut.cs.alarm.alarming.AlarmScheduler
+import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val alarmScheduler = AlarmScheduler(this)
         enableEdgeToEdge()
         setContent {
             AlarmTheme {
@@ -37,8 +40,10 @@ class MainActivity : ComponentActivity() {
                     when (currentScreen) {
                         "main" -> MainScreen(
                             modifier = Modifier.padding(innerPadding),
-                            onNavigateToSensors = { currentScreen = "sensors" }
+                            onNavigateToSensors = { currentScreen = "sensors" },
+                            createAlarm = { alarmScheduler.scheduleAlarm(Alarm(1u, 2)) }
                         )
+
                         "sensors" -> SensorScreen(
                             onNavigateBack = { currentScreen = "main" }
                         )
@@ -50,7 +55,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(modifier: Modifier = Modifier, onNavigateToSensors: () -> Unit) {
+fun MainScreen(
+    modifier: Modifier = Modifier,
+    onNavigateToSensors: () -> Unit,
+    createAlarm: () -> Unit
+) {
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -60,6 +69,10 @@ fun MainScreen(modifier: Modifier = Modifier, onNavigateToSensors: () -> Unit) {
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onNavigateToSensors) {
             Text("Show Sensor Info")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = createAlarm) {
+            Text("Give me Alarm....")
         }
     }
 }
