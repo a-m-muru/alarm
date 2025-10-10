@@ -96,13 +96,13 @@ class AlarmActivity : ComponentActivity() {
                     ),
                 verticalArrangement = Arrangement.Center
             ) {
-                minigameScreen()
+                MinigameScreen()
             }
         }
     }
 
     @Composable
-    fun minigameScreen() {
+    fun MinigameScreen() {
         JumpingJacks(
             onNavigateBack = { finish() }
         )
