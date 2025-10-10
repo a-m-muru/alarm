@@ -2,7 +2,7 @@ package ee.ut.cs.alarm.data
 
 import android.os.Parcel
 import android.os.Parcelable
-import kotlin.experimental.or
+import java.util.UUID
 
 object Day {
     const val MONDAY: Byte = 0x1
@@ -14,27 +14,47 @@ object Day {
     const val SUNDAY: Byte = 0x40
 }
 
-class Alarm(time: UInt, var days: Byte, var enabled: Boolean = true)/* : Parcelable {
+data class Alarm(
+    var id: UUID = UUID.randomUUID(),
+    var time: UInt = 0u,
+    var days: Byte = 0x00b,
+    var label: String? = null,
+    val ringtoneUri: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+    var enabled: Boolean = true
+) : Parcelable {
+    override fun describeContents(): Int {
+        return 0
+    }
 
     companion object CREATOR: Parcelable.Creator<Alarm?> {
         override fun createFromParcel(source: Parcel?): Alarm? {
-            val x  = source?.readInt()
-            return Alarm(x as UInt, 0)
+            if (source != null) {
+                val id = UUID.fromString(source.readString())
+                val time = source.readInt().toUInt()
+                val days = source.readByte()
+                val label = source.readString()
+                val ringtoneUri = source.readString()
+                val createdAt = source.readLong()
+                val enabled = source.readByte()
+                return Alarm(id, time, days, label, ringtoneUri, createdAt, enabled == 0x01.toByte())
+            }
+
+            return Alarm()
         }
 
         override fun newArray(size: Int): Array<out Alarm?>? {
-            TODO("Not yet implemented")
+            return Array<Alarm?>(size){ null }
         }
     }
 
-    override fun describeContents(): Int {
-        return Parcelable.CONTENTS_FILE_DESCRIPTOR
-    }
-
     override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeInt(1)
+        dest.writeString(id.toString())
+        dest.writeInt(time.toInt())
+        dest.writeByte(days)
+        dest.writeString(label)
+        dest.writeString(ringtoneUri)
+        dest.writeLong(createdAt)
+        dest.writeByte(if (enabled)  0x01b else 0x00)
     }
-}*/
-
-
-val al = Alarm(3600u, Day.MONDAY or Day.TUESDAY)
+}
