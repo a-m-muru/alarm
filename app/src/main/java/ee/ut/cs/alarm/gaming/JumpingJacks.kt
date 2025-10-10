@@ -46,6 +46,7 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
     //
     var currentCount by remember { mutableStateOf(0) }
     val neededCount = 4
+    val neededAcceleration = 30
     val victory by remember { mutableStateOf(false) }
 
 
@@ -53,6 +54,8 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
     var isUpsideDown by remember { mutableStateOf(false) }
     var nextPos by remember { mutableStateOf(false) }
     var worldUpVector by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
+    val deviceUpVector = floatArrayOf(0f, 1f, 0f)
+    val rotationMatrix = FloatArray(9)
 
 
     DisposableEffect(sensorManager){
@@ -66,9 +69,7 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
 
                     Sensor.TYPE_ROTATION_VECTOR -> {
 
-                        val rotationMatrix = FloatArray(9)
                         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-                        val deviceUpVector = floatArrayOf(0f, 1f, 0f)
 
                         worldUpVector.x =
                             rotationMatrix[0] * deviceUpVector[0] + rotationMatrix[1] * deviceUpVector[1] + rotationMatrix[2] * deviceUpVector[2]
@@ -80,7 +81,7 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
                         isUpsideDown = worldUpVector.z < 0
                     }
                 }
-                if (accelerometerData.length() > 30 && (nextPos == isUpsideDown) && (worldUpVector.z > 0.7 || worldUpVector.z < -0.8 )){
+                if (accelerometerData.length() > neededAcceleration && (nextPos == isUpsideDown) && (worldUpVector.z > 0.7 || worldUpVector.z < -0.8 )){
                     nextPos = !nextPos
                     currentCount++
                     AudioPlayer.playSound(context, R.raw.good)
@@ -91,7 +92,7 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
             }
         }
         linearAccelerometer?.let {
-            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI)
+            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_GAME)
         }
         orientation?.let {
             sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI)
