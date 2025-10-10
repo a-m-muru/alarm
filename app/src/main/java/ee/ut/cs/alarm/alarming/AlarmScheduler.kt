@@ -26,7 +26,7 @@ class AlarmScheduler(private val ctx: Context) {
 
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            System.currentTimeMillis() + 10000,
+            System.currentTimeMillis() + 1000,
             pendingIntent,
         )
     }

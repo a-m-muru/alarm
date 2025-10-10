@@ -1,7 +1,9 @@
 package ee.ut.cs.alarm.gaming
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.offset
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.alarm.Greeting
+import ee.ut.cs.alarm.R
 import kotlinx.coroutines.delay
 import kotlin.math.sin
 
@@ -26,7 +29,7 @@ class Vec2(var x: Float, var y: Float) {
 
 @Composable
 // chat gept
-fun GameLoob() {
+fun GameLoob(ctx: Context) {
     var frame by remember { mutableStateOf(0) }
     var pos by remember { mutableStateOf(Vec2(0f, 0f)) }
     var dir by remember { mutableStateOf(Vec2(0f, 0f)) }
@@ -36,7 +39,7 @@ fun GameLoob() {
         while (true) {
             delay(1000 / 60)
             frame += 1
-            pos += Vec2(1f, sin(pos.x * 0.5f) * 20f)
+            pos += Vec2(0.25f, sin(pos.x * 0.05f) * 10f)
         }
     }
 
