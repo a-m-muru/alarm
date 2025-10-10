@@ -41,7 +41,7 @@ class MainActivity : ComponentActivity() {
                         "main" -> MainScreen(
                             modifier = Modifier.padding(innerPadding),
                             onNavigateToSensors = { currentScreen = "sensors" },
-                            createAlarm = { alarmScheduler.scheduleAlarm(Alarm(1u, 2)) }
+                            createAlarm = { alarmScheduler.scheduleAlarm(Alarm(1u, 0)) }
                         )
 
                         "sensors" -> SensorScreen(
