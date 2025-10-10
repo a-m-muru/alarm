@@ -2,6 +2,7 @@ package ee.ut.cs.alarm.data
 
 import android.os.Parcel
 import android.os.Parcelable
+import ee.ut.cs.alarm.data.proto.AlarmProto
 import java.util.UUID
 
 object Day {
@@ -46,6 +47,18 @@ data class Alarm(
         override fun newArray(size: Int): Array<out Alarm?>? {
             return Array<Alarm?>(size){ null }
         }
+
+        fun fromProto(proto: AlarmProto): Alarm {
+            return Alarm(
+                id = UUID.fromString(proto.id),
+                time = proto.time.toUInt(),
+                days = proto.days.toByte(),
+                label = proto.label,
+                ringtoneUri = proto.ringtoneUri,
+                createdAt = proto.createdAt,
+                enabled = proto.enabled,
+            )
+        }
     }
 
     override fun writeToParcel(dest: Parcel, flags: Int) {
@@ -56,5 +69,17 @@ data class Alarm(
         dest.writeString(ringtoneUri)
         dest.writeLong(createdAt)
         dest.writeByte(if (enabled)  0x01b else 0x00)
+    }
+
+    fun toProto(): AlarmProto {
+        return AlarmProto.newBuilder()
+            .setId(id.toString())
+            .setTime(time.toInt())
+            .setDays(days.toInt())
+            .setLabel(label)
+            .setRingtoneUri(ringtoneUri)
+            .setCreatedAt(createdAt)
+            .setEnabled(enabled)
+            .build()
     }
 }
