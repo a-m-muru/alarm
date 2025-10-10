@@ -80,6 +80,11 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
     //var accelerometerDataString by remember { mutableStateOf("Waiting for data...") }
     var accelerometerData by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
     var gyroscopeData by remember { mutableStateOf( Vec3(0f, 0f, 0f)) }
+
+    var sensorAccuracy by remember { mutableStateOf(0) }
+    var accSensor: String by remember { mutableStateOf("") }
+
+
     var count by remember { mutableStateOf(0) }
     var log by remember { mutableStateOf("") }
     var doLog by remember { mutableStateOf(false) }
@@ -91,8 +96,8 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
 
 
 
-    //var position by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
-    //var velocity by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
+    var position by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
+    var velocity by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
     var lastTime by remember { mutableStateOf(System.currentTimeMillis()) }
 
 
@@ -103,24 +108,26 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
         val sensorEventListener = object : SensorEventListener {
             override fun onSensorChanged(event: SensorEvent?) {
                 if (!paused) {
-                    val deltaTime = (System.currentTimeMillis() - lastTime) / 1000.0f
-                    lastTime = System.currentTimeMillis()
 
                     when (event?.sensor?.type) {
                         Sensor.TYPE_LINEAR_ACCELERATION -> {
+
+                            val deltaTime = (System.currentTimeMillis() - lastTime) / 1000.0f
+                            lastTime = System.currentTimeMillis()
+
                             val acc = Vec3(event.values[0], event.values[1], event.values[2])
                             accelerometerData = acc
 
-                            //velocity = velocity + acc * deltaTime
+                            velocity = velocity + acc * deltaTime
 
-                            //position = position + velocity * deltaTime
+                            position = position + velocity * deltaTime
 
                             //position = position + getDistance(accelerometerData, gyroscopeData, deltaTime)
 
 
                             if (doLog) {
-                                log += "ACC: " + acc + " l: " + acc.length() + "\n"
-                                print(event.values)
+                                //log += "ACC: " + acc + " l: " + acc.length() + "\n"
+                                //print(event.values)
                                 //log += "VEL: " + velocity.toString() + "\n"
                                 //log += "POS: " + position.toString() + "\n"
                             }
@@ -146,8 +153,8 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
 
                             if (doLog) {
                                 // You can log the Z-value to see how it changes
-                                log += "ORI: " + event.values.toSet() + "\n"
-                                log += "World: ${worldUpVector}\n"
+                                //log += "ORI: " + event.values.toSet() + "\n"
+                                //log += "World: ${worldUpVector}\n"
                             }
 
                         }
@@ -160,16 +167,22 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
             }
 
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // You can handle accuracy changes here if needed
+                sensorAccuracy = accuracy
+                accSensor = sensor?.stringType!!
+
+                if (doLog) {
+                    log += "Accuracy changed to $accuracy\n"
+                    log += "Sensor: ${sensor.stringType}\n"
+                }
             }
         }
 
         // Register listeners for the sensors that exist
         linearAccelerometer?.let {
-            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI)
+            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_FASTEST)
         }
         orientation?.let{
-            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_UI)
+            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_FASTEST)
         }
 
         // Cleanup: unregister listener when composable leaves the composition
@@ -191,15 +204,18 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
         Text(text = "Accelerometer:")
         Text(text = if (linearAccelerometer != null) accelerometerData.toString() else "Not available", fontSize = 18.sp)
 
-        Spacer(modifier = Modifier.height(24.dp))
         Text(text = "Orientation:")
         Text(text = if (orientation != null) gyroscopeData.toString() else "Not available", fontSize = 18.sp)
 
-        Spacer(modifier = Modifier.height(24.dp))
-        //Text(text = "Position:")
-        //Text(text = position.toString(), fontSize = 18.sp)
+        //Spacer(modifier = Modifier.height(24.dp))
+        Text(text = "Position:")
+        Text(text = position.toString(), fontSize = 18.sp)
         Text(text = "World up: ${if (isUpsideDown) "yes" else "no"}", fontSize = 18.sp)
         Text(text = worldUpVector.toString(), fontSize = 18.sp)
+
+        //Spacer(modifier = Modifier.height(24.dp))
+        Text( text = "Accurancy: $sensorAccuracy")
+        Text( text = "Sensor: $accSensor")
 
 
 
