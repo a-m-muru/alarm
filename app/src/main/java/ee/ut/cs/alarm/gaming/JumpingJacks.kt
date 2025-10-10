@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.Vec3
 import kotlin.math.pow
 import kotlin.math.round
@@ -82,6 +83,7 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
                 if (accelerometerData.length() > 30 && (nextPos == isUpsideDown) && (worldUpVector.z > 0.7 || worldUpVector.z < -0.8 )){
                     nextPos = !nextPos
                     currentCount++
+                    AudioPlayer.playSound(context, R.raw.good)
                 }
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
