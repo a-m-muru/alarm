@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.gaming.AudioPlayer
 import ee.ut.cs.alarm.gaming.Vec2
+import ee.ut.cs.alarm.gaming.GameLoob
+import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 import kotlinx.coroutines.delay
 import java.util.ArrayList
@@ -109,7 +111,9 @@ class AlarmActivity : ComponentActivity() {
 
     @Composable
     fun minigameScreen() {
-
+        JumpingJacks(
+            onNavigateBack = { finish() }
+        )
     }
 
 }
