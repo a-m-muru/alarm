@@ -44,7 +44,7 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
 
     //
     var currentCount by remember { mutableStateOf(0) }
-    val neededCount = 8
+    val neededCount = 4
     val victory by remember { mutableStateOf(false) }
 
 
@@ -79,7 +79,7 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
                         isUpsideDown = worldUpVector.z < 0
                     }
                 }
-                if (accelerometerData.length() > 40 && (nextPos == isUpsideDown) && (worldUpVector.z > 0.7 || worldUpVector.z < -0.8 )){
+                if (accelerometerData.length() > 30 && (nextPos == isUpsideDown) && (worldUpVector.z > 0.7 || worldUpVector.z < -0.8 )){
                     nextPos = !nextPos
                     currentCount++
                 }

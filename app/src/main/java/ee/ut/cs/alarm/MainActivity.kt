@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import ee.ut.cs.alarm.alarming.AlarmScheduler
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.gaming.JumpingJacks
+import ee.ut.cs.alarm.gaming.SensorScreen
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 
 class MainActivity : ComponentActivity() {
