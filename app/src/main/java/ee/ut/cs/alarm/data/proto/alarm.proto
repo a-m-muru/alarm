@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option java_package = "ee.ut.cs.alarm.data.proto";
+option java_multiple_files = true;
+
+message AlarmProto {
+  string id = 1;
+  uint32 time = 2;
+  uint32 days = 3;
+  string label = 4;
+  string ringtone_uri = 5;
+  int64 created_at = 6;
+  bool enabled = 7;
+}
+
+message AlarmListProto {
+  repeated AlarmProto alarms = 1;
+}
