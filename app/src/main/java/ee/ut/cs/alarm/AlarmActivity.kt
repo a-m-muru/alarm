@@ -1,5 +1,6 @@
 package ee.ut.cs.alarm
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -35,14 +36,14 @@ class AlarmActivity : ComponentActivity() {
         setContent {
             AlarmTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AlarmScreen(Modifier.padding(innerPadding))
+                    AlarmScreen(this, Modifier.padding(innerPadding))
                 }
             }
         }
     }
 
     @Composable
-    fun AlarmScreen(modifier: Modifier) {
+    fun AlarmScreen(ctx: Context, modifier: Modifier) {
 //        Text("asdasdasd")
 //        GameLoob(this)
 //        Button(
@@ -50,6 +51,8 @@ class AlarmActivity : ComponentActivity() {
 //        ) {
 //            Text("yeyeyayhs")
 //        }
+        val timeString = "07:07"
+        val dateString = "Sunday Jul 7"
 
         Column(
             modifier = modifier.fillMaxSize(),
@@ -57,10 +60,13 @@ class AlarmActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(16.dp))
-            Text("You have the alarm!", fontSize = 32.sp)
+            Text("You have the alarm!", fontSize = 24.sp)
+            Text(timeString, fontSize = 84.sp)
+            Text(dateString, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(16.dp))
             Button(
-                onClick = {}
-            ) { Text("Lets's' do the \"mini game\"") }
+                onClick = { AudioPlayer.playSound(ctx, R.raw.bump) }
+            ) { Text("Sneeze 7 min") }
         }
     }
 
