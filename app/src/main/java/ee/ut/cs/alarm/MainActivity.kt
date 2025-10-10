@@ -24,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.alarm.alarming.AlarmScheduler
 import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 
 class MainActivity : ComponentActivity() {
@@ -41,10 +42,15 @@ class MainActivity : ComponentActivity() {
                         "main" -> MainScreen(
                             modifier = Modifier.padding(innerPadding),
                             onNavigateToSensors = { currentScreen = "sensors" },
+                            onNavigateToJumpingJacks = { currentScreen = "jumpingjacks" },
                             createAlarm = { alarmScheduler.scheduleAlarm(Alarm(1u, 0)) }
                         )
 
                         "sensors" -> SensorScreen(
+                            onNavigateBack = { currentScreen = "main" }
+                        )
+
+                        "jumpingjacks" -> JumpingJacks(
                             onNavigateBack = { currentScreen = "main" }
                         )
                     }
@@ -58,6 +64,7 @@ class MainActivity : ComponentActivity() {
 fun MainScreen(
     modifier: Modifier = Modifier,
     onNavigateToSensors: () -> Unit,
+    onNavigateToJumpingJacks: () -> Unit,
     createAlarm: () -> Unit
 ) {
     Column(
@@ -70,6 +77,11 @@ fun MainScreen(
         Button(onClick = onNavigateToSensors) {
             Text("Show Sensor Info")
         }
+
+        Button(onClick = onNavigateToJumpingJacks) {
+            Text("Jumping Jacks")
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = createAlarm) {
             Text("Give me Alarm....")
