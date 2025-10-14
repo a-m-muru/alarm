@@ -10,15 +10,23 @@ import ee.ut.cs.alarm.ui.screens.AlarmListScreen
 @Composable
 fun AlarmNavigation(
     navController: NavHostController,
-    modifier: Modifier = Modifier
 ) {
+    val onNavigate = { route: String ->
+        navController.navigate(route) {
+            popUpTo(navController.graph.startDestinationId) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     NavHost(
         navController = navController,
-        startDestination = Screen.AlarmList.route,
-        modifier = modifier,
+        startDestination = Screen.AlarmList.route
     ) {
         composable(Screen.AlarmList.route) {
-            AlarmListScreen()
+            AlarmListScreen(onNavigate)
         }
         composable(Screen.About.route) {
             TODO("Implement about screen")
