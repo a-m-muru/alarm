@@ -21,14 +21,9 @@ class MainActivity : ComponentActivity() {
             AlarmTheme {
                 val navController = rememberNavController()
 
-                Scaffold(
-                    modifier = Modifier.fillMaxSize()
-                ) { innerPadding ->
-                    AlarmNavigation(
-                        navController = navController,
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                AlarmNavigation(
+                    navController = navController
+                )
             }
         }
     }
