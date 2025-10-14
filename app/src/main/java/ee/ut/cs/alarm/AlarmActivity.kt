@@ -1,17 +1,11 @@
 package ee.ut.cs.alarm
 
-import android.content.Context
-import android.media.PlaybackParams
 import android.app.ActivityManager
 import android.content.Context
 import android.media.PlaybackParams
 import android.os.Bundle
 import android.util.Log
-import android.view.KeyEvent
-import android.view.WindowInsetsController
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -32,24 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.WindowInsetsControllerCompat
 import ee.ut.cs.alarm.gaming.AudioPlayer
-import ee.ut.cs.alarm.gaming.Vec2
-import ee.ut.cs.alarm.gaming.GameLoob
-import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
-import kotlin.random.Random
 import kotlin.random.Random
 
 
