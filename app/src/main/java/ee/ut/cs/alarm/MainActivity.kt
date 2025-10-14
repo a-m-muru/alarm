@@ -1,6 +1,7 @@
 package ee.ut.cs.alarm
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -35,8 +36,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AlarmTheme {
-                // A state to manage which screen is currently shown
                 var currentScreen by remember { mutableStateOf("main") }
+                Log.e("asdasdasd", currentScreen)
+                // A state to manage which screen is currently shown
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     when (currentScreen) {
@@ -58,6 +60,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
     }
 }
 
