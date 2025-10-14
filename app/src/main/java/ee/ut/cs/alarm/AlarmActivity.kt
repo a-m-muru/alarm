@@ -1,5 +1,6 @@
 package ee.ut.cs.alarm
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.media.PlaybackParams
@@ -26,9 +27,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.gaming.AudioPlayer
 import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
+import java.text.DateFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import kotlin.random.Random
 
 
@@ -58,6 +63,7 @@ class AlarmActivity : ComponentActivity() {
         }
     }
 
+    @SuppressLint("SimpleDateFormat")
     @Composable
     fun AlarmScreen(ctx: Context, modifier: Modifier) {
 //        Text("asdasdasd")
@@ -67,8 +73,13 @@ class AlarmActivity : ComponentActivity() {
 //        ) {
 //            Text("yeyeyayhs")
 //        }
-        val timeString = "07:07"
-        val dateString = "Sunday Jul 7"
+        val alarm = intent.getParcelableExtra<Alarm>("alarm") as Alarm
+        val cal = Calendar.getInstance()
+        cal.setTimeInMillis(alarm.time.toLong())
+        val timeFmt = DateFormat.getTimeInstance(DateFormat.SHORT)
+        val dateFmt = SimpleDateFormat("EEEE dd MMMM")
+        val timeString = timeFmt.format(cal.time).toString()
+        val dateString = dateFmt.format(cal.get(Calendar.DAY_OF_WEEK_IN_MONTH))
 
         Column(
             modifier = modifier.fillMaxSize(),

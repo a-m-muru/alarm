@@ -14,7 +14,7 @@ class AlarmScheduler(private val ctx: Context) {
         val calendar = Calendar.getInstance()
 
         val intent = Intent(ctx, AlarmReceiver::class.java).apply {
-
+            putExtra("alarm", alarm)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(

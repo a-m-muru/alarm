@@ -9,11 +9,13 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.R
+import ee.ut.cs.alarm.data.Alarm
 
 class AlarmReceiver : BroadcastReceiver() {
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override fun onReceive(context: Context, intent: Intent?) {
         val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
+            putExtra("alarm", intent?.getParcelableExtra<Alarm>("alarm"))
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
