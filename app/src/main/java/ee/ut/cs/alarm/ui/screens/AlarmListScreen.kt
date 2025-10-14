@@ -3,9 +3,7 @@ package ee.ut.cs.alarm.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -32,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ee.ut.cs.alarm.alarming.AlarmScheduler
+import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,7 +52,7 @@ fun AlarmListScreen(
                         IconButton(onClick = { expanded = !expanded }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "More")
                         }
-                        DropdownMenu (
+                        DropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
@@ -64,10 +64,14 @@ fun AlarmListScreen(
                     }
                 }
             )
-         },
+        },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { Toast.makeText(context, "Clicked add!", Toast.LENGTH_LONG).show() }
+                onClick = {
+                    Toast.makeText(context, "Clicked add!", Toast.LENGTH_LONG).show()
+                    val alarmScheduler = AlarmScheduler(context)
+                    alarmScheduler.scheduleAlarm(Alarm())
+                }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
