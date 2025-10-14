@@ -1,16 +1,18 @@
 package ee.ut.cs.alarm.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import ee.ut.cs.alarm.ui.screens.AboutScreen
 import ee.ut.cs.alarm.ui.screens.AlarmListScreen
 
 @Composable
 fun AlarmNavigation(
     navController: NavHostController,
 ) {
+    // Callback function to call from screens in order to change
+    // the navigation
     val onNavigate = { route: String ->
         navController.navigate(route) {
             popUpTo(navController.graph.startDestinationId) {
@@ -29,7 +31,7 @@ fun AlarmNavigation(
             AlarmListScreen(onNavigate)
         }
         composable(Screen.About.route) {
-            TODO("Implement about screen")
+            AboutScreen(onNavigate)
         }
     }
 }
