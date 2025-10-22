@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.gaming.AudioPlayer
+import ee.ut.cs.alarm.gaming.GoIntoTheLight
 import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 import java.text.DateFormat
@@ -124,9 +125,10 @@ class AlarmActivity : ComponentActivity() {
 
     @Composable
     fun MinigameScreen() {
-        JumpingJacks(
-            onNavigateBack = { finish() }
-        )
+//        JumpingJacks(
+//            onNavigateBack = { finish() }
+//        )
+        GoIntoTheLight(onNavigateBack = { finish() })
     }
 
 }
