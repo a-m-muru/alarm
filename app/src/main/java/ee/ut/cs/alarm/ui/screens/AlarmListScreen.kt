@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
@@ -27,12 +29,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import ee.ut.cs.alarm.alarming.AlarmScheduler
-import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.ui.components.AlarmCard
 import ee.ut.cs.alarm.ui.navigation.Screen
 import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
 
@@ -68,14 +66,10 @@ fun AlarmListScreen(
                     }
                 }
             )
-        },
+         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    Toast.makeText(context, "Clicked add!", Toast.LENGTH_LONG).show()
-                    val alarmScheduler = AlarmScheduler(context)
-                    alarmScheduler.scheduleAlarm(Alarm())
-                }
+                onClick = { Toast.makeText(context, "Clicked add!", Toast.LENGTH_LONG).show() }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
@@ -84,15 +78,8 @@ fun AlarmListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(padding),
         ) {
-            Text(
-                text = "My Alarms",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-
             if (alarms.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -103,6 +90,20 @@ fun AlarmListScreen(
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            } else {
+                LazyColumn {
+                    items(
+                        items = alarms,
+                        key = { it.id }
+                    ) { alarm ->
+                        AlarmCard(
+                            alarm = alarm,
+                            onToggleEnabled = {enabled -> vm.updateItem(alarm.copy(enabled=enabled))},
+                            onDelete = {currentAlarm -> vm.removeAlarm(currentAlarm)},
+                            onEdit = {}
+                        )
+                    }
                 }
             }
         }
