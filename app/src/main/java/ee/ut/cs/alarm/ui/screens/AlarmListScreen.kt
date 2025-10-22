@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,14 +34,17 @@ import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.alarming.AlarmScheduler
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.ui.navigation.Screen
+import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmListScreen(
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    vm: AlarmListViewModel
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
+    val alarms by vm.items.collectAsState()
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -89,15 +93,17 @@ fun AlarmListScreen(
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No alarms set\nTap + to add your first alarm",
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            if (alarms.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No alarms set\nTap + to add your first alarm",
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
