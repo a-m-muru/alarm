@@ -3,7 +3,6 @@ package ee.ut.cs.alarm.gaming
 import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.offset
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -13,8 +12,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ee.ut.cs.alarm.Greeting
-import ee.ut.cs.alarm.R
 import kotlinx.coroutines.delay
 import kotlin.math.sin
 
