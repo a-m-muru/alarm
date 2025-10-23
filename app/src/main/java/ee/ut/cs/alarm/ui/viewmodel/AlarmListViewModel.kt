@@ -23,6 +23,12 @@ class AlarmListViewModel(private val packageName: String) : ViewModel() {
         )
     }
 
+    fun hasAlarm(alarm: Alarm): Boolean {
+        return _items.value.filter {
+            it.id == alarm.id
+        }.size == 1
+    }
+
     fun addAlarm(alarm: Alarm) {
         _items.value = _items.value + alarm
     }
