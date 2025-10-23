@@ -13,14 +13,16 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxDefaults
+import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,8 +34,8 @@ import kotlin.experimental.and
 fun AlarmCard(
     alarm: Alarm,
     onToggleEnabled: (Boolean) -> Unit,
-    onEdit: (Alarm) -> Unit,
-    onDelete: (Alarm) -> Unit
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val timeString = String.format("%02d:%02d", (alarm.time / 3600u).toInt(), ((alarm.time / 60u) % 60u).toInt())
     val days: MutableList<String> = mutableListOf()
@@ -53,12 +55,15 @@ fun AlarmCard(
         days.add("Sun")
     val dayString = days.joinToString()
 
-    val swipeToDismissBoxState = rememberSwipeToDismissBoxState(
+    val swipeToDismissBoxState = SwipeToDismissBoxState(
+        initialValue = SwipeToDismissBoxValue.Settled,
+        density = LocalDensity.current,
+        positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold,
         confirmValueChange = {
             if (it == SwipeToDismissBoxValue.StartToEnd)
-                onEdit(alarm)
+                onEdit()
             else if (it == SwipeToDismissBoxValue.EndToStart)
-                onDelete(alarm)
+                onDelete()
 
             it != SwipeToDismissBoxValue.StartToEnd
         }
