@@ -2,7 +2,12 @@ package ee.ut.cs.alarm.data
 
 import android.util.Log
 import org.xmlpull.v1.XmlPullParserFactory
+import java.io.BufferedInputStream
+import java.io.BufferedReader
+import java.io.ByteArrayOutputStream
+import java.io.InputStreamReader
 import java.io.StringReader
+import java.net.HttpURLConnection
 import java.net.URL
 import org.xmlpull.v1.XmlPullParser as xpp
 
@@ -38,8 +43,20 @@ data class Weather(val temperature: Float, val phenomenon: String, val windspeed
 
             var state = S_WRONG
 
+            var txt: String
             val url = URL("https://www.ilmateenistus.ee/ilma_andmed/xml/observations.php")
-            val txt = url.readText();
+            txt = url.readText();
+            Log.d(logTag, "length of gotten text is ${txt.length}")
+//            val connection = url.openConnection() as HttpURLConnection
+//            try {
+//                val inp = BufferedInputStream(connection.inputStream)
+//                val reader = InputStreamReader(inp)
+//                val bufread = BufferedReader(reader)
+//                txt = bufread.readText()
+//            } finally {
+//                connection.disconnect()
+//            }
+
             val parser = XmlPullParserFactory.newInstance().newPullParser()
             parser.setInput(StringReader(txt))
 
@@ -51,32 +68,39 @@ data class Weather(val temperature: Float, val phenomenon: String, val windspeed
             while (eventType != xpp.END_DOCUMENT) {
 
                 // trying to find the station we're interested in
-                if (state == S_WRONG && eventType == xpp.START_TAG && parser.text == TAG_OBSERVATIONS) {
+                if (state == S_WRONG && eventType == xpp.START_TAG && parser.name == TAG_OBSERVATIONS) {
+                    Log.d(logTag, "started searching for station")
                     state = S_SEARCHING
-                } else if (state == S_SEARCHING && eventType == xpp.START_TAG && parser.text == TAG_STATION) {
+                } else if (state == S_SEARCHING && eventType == xpp.START_TAG && parser.name == TAG_STATION) {
+                    Log.d(logTag, "started searching in station")
                     state = S_SEARCHING_STATION
-                } else if (state == S_SEARCHING_STATION && eventType == xpp.START_TAG && parser.text == TAG_NAME) {
+                } else if (state == S_SEARCHING_STATION && eventType == xpp.START_TAG && parser.name == TAG_NAME) {
                     val evt = parser.next()
-                    if (evt != xpp.TEXT) continue // name was empty??
+                    if (evt != xpp.TEXT) {
+                        // name was empty??
+                        eventType = parser.next()
+                        continue
+                    }
                     if (parser.text == NAME_STATION) {
                         // found correct station
+                        Log.d(logTag, "found correct station")
                         state = S_IN_STATION
                     }
                 }
 
                 // looking for data in the station
                 else if (state == S_IN_STATION) {
-                    if (eventType == xpp.END_TAG && parser.text == TAG_STATION) {
+                    if (eventType == xpp.END_TAG && parser.name == TAG_STATION) {
                         // done parsing the intended station
                         state = S_WRONG
                         break
                     } else if (eventType == xpp.START_TAG) {
 
-                        if (parser.text == TAG_TEMPERATURE) {
+                        if (parser.name == TAG_TEMPERATURE) {
                             temperature = getTagInfo(parser, TAG_TEMPERATURE).toFloat()
-                        } else if (parser.text == TAG_PHENOMENON) {
+                        } else if (parser.name == TAG_PHENOMENON) {
                             phenomenon = getTagInfo(parser, TAG_PHENOMENON)
-                        } else if (parser.text == TAG_WINDSPEED) {
+                        } else if (parser.name == TAG_WINDSPEED) {
                             windspeed = getTagInfo(parser, TAG_WINDSPEED).toFloat()
                         }
                     }
