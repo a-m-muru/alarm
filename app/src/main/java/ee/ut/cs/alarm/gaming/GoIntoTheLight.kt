@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.sp
 val WAIT_MINUTES_BEFORE_GRANTING_MERCY_IF_CANT_REACH_REQUIRED_LIGHT_LEVEL = 5
 
 private fun calculateRequiredLightAmount(initialLight: Float, secondsPassed: Float): Float {
-    return initialLight * 1.1f - (secondsPassed / (WAIT_MINUTES_BEFORE_GRANTING_MERCY_IF_CANT_REACH_REQUIRED_LIGHT_LEVEL * 60f))
+    return initialLight * 2f - (secondsPassed / (WAIT_MINUTES_BEFORE_GRANTING_MERCY_IF_CANT_REACH_REQUIRED_LIGHT_LEVEL * 60f))
         .coerceAtLeast(0f)
 }
 
