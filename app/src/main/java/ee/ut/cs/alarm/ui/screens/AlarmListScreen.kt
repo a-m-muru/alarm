@@ -30,7 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.ui.components.AlarmCard
+import ee.ut.cs.alarm.ui.components.EditAlarmDialog
 import ee.ut.cs.alarm.ui.navigation.Screen
 import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
 
@@ -43,6 +45,9 @@ fun AlarmListScreen(
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     val alarms by vm.items.collectAsState()
+
+    var showDialog by remember { mutableStateOf(false) }
+    var editableAlarm by remember { mutableStateOf(Alarm()) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -100,11 +105,27 @@ fun AlarmListScreen(
                         AlarmCard(
                             alarm = alarm,
                             onToggleEnabled = {enabled -> vm.updateItem(alarm.copy(enabled=enabled))},
-                            onDelete = {currentAlarm -> vm.removeAlarm(currentAlarm)},
-                            onEdit = {}
+                            onDelete = {
+                                vm.removeAlarm(alarm)
+                            },
+                            onEdit = {
+                                showDialog = true
+                                editableAlarm = alarm
+                            }
                         )
                     }
                 }
+            }
+
+            if (showDialog) {
+                EditAlarmDialog(
+                    editableAlarm,
+                    {showDialog = false},
+                    { alarmToSave ->
+                        vm.updateItem(alarmToSave)
+                        showDialog = false
+                    }
+                )
             }
         }
     }
