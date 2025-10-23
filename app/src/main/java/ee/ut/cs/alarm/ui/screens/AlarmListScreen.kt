@@ -74,7 +74,10 @@ fun AlarmListScreen(
          },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { Toast.makeText(context, "Clicked add!", Toast.LENGTH_LONG).show() }
+                onClick = {
+                    editableAlarm = Alarm()
+                    showDialog = true
+                }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
@@ -122,7 +125,11 @@ fun AlarmListScreen(
                     editableAlarm,
                     {showDialog = false},
                     { alarmToSave ->
-                        vm.updateItem(alarmToSave)
+                        if (vm.hasAlarm(alarmToSave)) {
+                            vm.updateItem(alarmToSave)
+                        } else {
+                            vm.addAlarm(alarmToSave)
+                        }
                         showDialog = false
                     }
                 )
