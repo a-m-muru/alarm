@@ -1,0 +1,3 @@
+-Which API was chosen and why
+-Example API endpoint used
+-Error handling strategy
