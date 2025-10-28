@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Bundle
+import android.os.PersistableBundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -34,6 +35,7 @@ import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Weather
 import ee.ut.cs.alarm.gaming.GoIntoTheLight
+import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -41,9 +43,12 @@ import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import kotlin.random.Random
 
 
 class AlarmActivity : ComponentActivity() {
+
+    var minigameId: Int = 0
 
     // this disables switching active apps
     override fun onPause() {
@@ -57,8 +62,10 @@ class AlarmActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("AlarmActivity", "creating alarm instance")
 
-        Log.d("AlarmActivity", "adaisdasdadsgfdsfalökdgjnfsdlkfjdlsfjldsfj")
+        minigameId = Random.nextInt(2)
+
         enableEdgeToEdge()
         setContent {
             AlarmTheme {
@@ -68,6 +75,21 @@ class AlarmActivity : ComponentActivity() {
             }
         }
     }
+
+    // looks jank and not compose-y but works!?
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("minigameId", minigameId)
+        Log.d("AlarmActivity", "saving alarm screen state")
+
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        Log.d("AlarmActivity", "restoring alarm screen state")
+        minigameId = savedInstanceState.getInt("minigameId")
+    }
+
 
     @SuppressLint("SimpleDateFormat")
     @Composable
@@ -88,13 +110,14 @@ class AlarmActivity : ComponentActivity() {
         val dateString = dateFmt.format(cal.get(Calendar.DAY_OF_WEEK_IN_MONTH))
 
         val coroutineScope = rememberCoroutineScope()
-        var weather by remember { mutableStateOf(Weather(-1f, "-1", -1f)) }
+        var weatherText by remember { mutableStateOf("Fetching weather...")}
 
         LaunchedEffect(Unit) {
             coroutineScope.launch {
-                weather = withContext(Dispatchers.IO) {
+                val weather = withContext(Dispatchers.IO) {
                     Weather.fromRequest()
                 }
+                weatherText = weather.getString()
             }
         }
 
@@ -107,7 +130,7 @@ class AlarmActivity : ComponentActivity() {
             Text("You have the alarm!", fontSize = 24.sp)
             Text(timeString, fontSize = 84.sp, fontWeight = FontWeight.Bold)
             Text(dateString, fontSize = 16.sp)
-            Text(weather.getString(), fontSize = 12.sp)
+            Text(weatherText, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(16.dp))
             Column(
                 modifier = Modifier
@@ -126,17 +149,19 @@ class AlarmActivity : ComponentActivity() {
                     ),
                 verticalArrangement = Arrangement.Center
             ) {
-                MinigameScreen()
+                MinigameScreen(minigameId)
             }
         }
     }
 
     @Composable
-    fun MinigameScreen() {
-//        JumpingJacks(
-//            onNavigateBack = { finish() }
-//        )
-        GoIntoTheLight(onNavigateBack = { finish() })
+    fun MinigameScreen(id: Int) {
+        val navback = { finish() }
+
+        when (id) {
+            0 -> JumpingJacks(onNavigateBack = navback)
+            1 -> GoIntoTheLight(onNavigateBack = navback)
+        }
     }
 
 }
