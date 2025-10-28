@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.service.AlarmScheduler
 import ee.ut.cs.alarm.ui.components.AlarmCard
 import ee.ut.cs.alarm.ui.components.EditAlarmDialog
 import ee.ut.cs.alarm.ui.navigation.Screen
@@ -38,7 +39,8 @@ import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
 @Composable
 fun AlarmListScreen(
     onNavigate: (String) -> Unit,
-    vm: AlarmListViewModel
+    vm: AlarmListViewModel,
+    alarmScheduler: AlarmScheduler
 ) {
     var expanded by remember { mutableStateOf(false) }
     val alarms by vm.items.collectAsState()
@@ -123,10 +125,12 @@ fun AlarmListScreen(
                     {showDialog = false},
                     { alarmToSave ->
                         if (vm.hasAlarm(alarmToSave)) {
+                            alarmScheduler.cancelAlarm(alarmToSave.id)
                             vm.updateItem(alarmToSave)
                         } else {
                             vm.addAlarm(alarmToSave)
                         }
+                        alarmScheduler.scheduleAlarm(alarmToSave)
                         showDialog = false
                     }
                 )
