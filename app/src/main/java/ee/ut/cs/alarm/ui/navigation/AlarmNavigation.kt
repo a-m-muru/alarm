@@ -1,6 +1,7 @@
 package ee.ut.cs.alarm.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -8,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import ee.ut.cs.alarm.data.repo.AlarmRepository
 import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
+import ee.ut.cs.alarm.service.AlarmScheduler
 import ee.ut.cs.alarm.ui.screens.AboutScreen
 import ee.ut.cs.alarm.ui.screens.AlarmListScreen
 import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
@@ -29,15 +31,17 @@ fun AlarmNavigation(
         }
     }
 
-    val repo: AlarmRepository = AlarmRepositoryImpl.getInstance(LocalContext.current)
+    val context = LocalContext.current
+    val repo: AlarmRepository = remember { AlarmRepositoryImpl.getInstance(context) }
     val vm: AlarmListViewModel = viewModel(factory = AlarmListViewModelFactory(repo))
+    val alarmScheduler = remember { AlarmScheduler(context) }
 
     NavHost(
         navController = navController,
         startDestination = Screen.AlarmList.route
     ) {
         composable(Screen.AlarmList.route) {
-            AlarmListScreen(onNavigate, vm)
+            AlarmListScreen(onNavigate, vm, alarmScheduler)
         }
         composable(Screen.About.route) {
             AboutScreen(onNavigate)
