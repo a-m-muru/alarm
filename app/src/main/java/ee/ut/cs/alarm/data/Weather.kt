@@ -15,7 +15,7 @@ data class Weather(val temperature: Float, val phenomenon: String, val windspeed
             val evt = parser.next()
             if (evt != xpp.TEXT) {
                 Log.e(logTag, "didn't find $tag in measurements")
-                return "-1"
+                return "-1111"
             } else {
                 return parser.text
             }
@@ -29,7 +29,9 @@ data class Weather(val temperature: Float, val phenomenon: String, val windspeed
             val TAG_TEMPERATURE = "airtemperature"
             val TAG_WINDSPEED = "windspeed"
 
-            val NAME_STATION = "Tartu-Tõravere"
+            val NAME_STATION = "Tartu-Tõravere" // we look at this station for Tartu weather
+            // why don't we look at any other weather?
+            // because only weather in Tartu is important
 
             val S_WRONG = -1
             val S_SEARCHING = 1
@@ -38,27 +40,34 @@ data class Weather(val temperature: Float, val phenomenon: String, val windspeed
 
             var state = S_WRONG
 
-            var txt: String
+            // using basic Java URL. simple URL GET request, no parameters, no issue
+            var txt: String = ""
             val url = URL("https://www.ilmateenistus.ee/ilma_andmed/xml/observations.php")
-            txt = url.readText();
+            try {
+                txt = url.readText()
+            } catch (e: Exception) {
+            }
             Log.d(logTag, "length of gotten text is ${txt.length}")
-//            val connection = url.openConnection() as HttpURLConnection
-//            try {
-//                val inp = BufferedInputStream(connection.inputStream)
-//                val reader = InputStreamReader(inp)
-//                val bufread = BufferedReader(reader)
-//                txt = bufread.readText()
-//            } finally {
-//                connection.disconnect()
-//            }
 
+            // use basic simple xml parsing that is provided with android
+            // API is simple and only one thing is needed from it so this is optimal
             val parser = XmlPullParserFactory.newInstance().newPullParser()
             parser.setInput(StringReader(txt))
 
-            var temperature: Float = -1f
-            var phenomenon: String = ""
-            var windspeed: Float = -1f
+            // these values will be stored. -1111 is used as an arbitrary "unset" value
+            var temperature: Float = -1111f
+            var phenomenon: String = "-1111"
+            var windspeed: Float = -1111f
 
+            var successes = 0
+
+            // xml tree format:
+            //   observations         // root element
+            //     station            // API lists multiple weather stations, we pick one
+            //       name             // name of the station
+            //       temperature      // in degrees celsius
+            //       windspeed        // in meters/second
+            //       phenomenon       // English description of weather
             var eventType = parser.eventType
             while (eventType != xpp.END_DOCUMENT) {
 
@@ -72,25 +81,25 @@ data class Weather(val temperature: Float, val phenomenon: String, val windspeed
                 } else if (state == S_SEARCHING_STATION && eventType == xpp.START_TAG && parser.name == TAG_NAME) {
                     val evt = parser.next()
                     if (evt != xpp.TEXT) {
-                        // name was empty??
+                        // name was empty? skip
                         eventType = parser.next()
                         continue
                     }
                     if (parser.text == NAME_STATION) {
-                        // found correct station
+                        // found correct station, set state
                         Log.d(logTag, "found correct station")
                         state = S_IN_STATION
                     }
                 }
 
-                // looking for data in the station
+                // looking for data in the correct station
                 else if (state == S_IN_STATION) {
                     if (eventType == xpp.END_TAG && parser.name == TAG_STATION) {
-                        // done parsing the intended station
+                        // done parsing the intended station, end
                         state = S_WRONG
                         break
                     } else if (eventType == xpp.START_TAG) {
-
+                        // upon finding the parameters we're looking for, store them
                         if (parser.name == TAG_TEMPERATURE) {
                             temperature = getTagInfo(parser, TAG_TEMPERATURE).toFloat()
                         } else if (parser.name == TAG_PHENOMENON) {
@@ -103,12 +112,21 @@ data class Weather(val temperature: Float, val phenomenon: String, val windspeed
 
                 eventType = parser.next()
             }
+
             return Weather(temperature, phenomenon, windspeed)
 
         }
     }
 
+    fun hasError(): Boolean {
+        return temperature == -1111F || phenomenon == "-1111" || windspeed == -1111F
+    }
+
     fun getString(): String {
+        // if we didn't get weather data, don't display it.
+        // if the API integration was more important, we'd notify the user.
+        // waking up and weather aren't that importantly correlated so we can do this.
+        if (hasError()) return ""
         return "$temperature°C | Wind $windspeed m/s | $phenomenon"
     }
 }
