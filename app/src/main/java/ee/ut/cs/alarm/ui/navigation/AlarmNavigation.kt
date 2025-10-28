@@ -6,6 +6,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import ee.ut.cs.alarm.data.repo.AlarmRepository
+import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
 import ee.ut.cs.alarm.ui.screens.AboutScreen
 import ee.ut.cs.alarm.ui.screens.AlarmListScreen
 import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
@@ -27,7 +29,8 @@ fun AlarmNavigation(
         }
     }
 
-    val vm: AlarmListViewModel = viewModel(factory = AlarmListViewModelFactory(LocalContext.current.packageName))
+    val repo: AlarmRepository = AlarmRepositoryImpl.getInstance(LocalContext.current)
+    val vm: AlarmListViewModel = viewModel(factory = AlarmListViewModelFactory(repo))
 
     NavHost(
         navController = navController,
