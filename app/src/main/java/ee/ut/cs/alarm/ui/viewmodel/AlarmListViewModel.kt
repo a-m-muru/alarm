@@ -2,25 +2,29 @@ package ee.ut.cs.alarm.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import ee.ut.cs.alarm.data.Alarm
-import ee.ut.cs.alarm.data.Day
+import ee.ut.cs.alarm.data.repo.AlarmRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlin.experimental.or
+import kotlinx.coroutines.launch
 
-class AlarmListViewModelFactory(private val packageName: String) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T = AlarmListViewModel(packageName) as T
+class AlarmListViewModelFactory(
+    private val repo: AlarmRepository,
+) : ViewModelProvider.NewInstanceFactory() {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T = AlarmListViewModel(repo) as T
 }
 
-class AlarmListViewModel(private val packageName: String) : ViewModel() {
+class AlarmListViewModel(
+    private val repo: AlarmRepository
+) : ViewModel() {
     private val _items = MutableStateFlow<List<Alarm>>(emptyList())
     val items = _items.asStateFlow()
 
     init {
-        _items.value = listOf(
-            Alarm(time = 30600u, days = Day.MONDAY or  Day.WEDNESDAY or Day.FRIDAY, label = "Wake up, time to go to work!", ringtoneUri = "android.resource://$packageName/ringtones/miku_ringtone.mp3", enabled = true),
-            Alarm(time = 36000u, days = Day.TUESDAY, label = "Another wakeup call", ringtoneUri = "android.resource://$packageName/ringtones/miku_ringtone.mp3", enabled = true)
-        )
+        viewModelScope.launch {
+            repo.getAlarms().collect { alarms -> _items.value = alarms }
+        }
     }
 
     fun hasAlarm(alarm: Alarm): Boolean {
@@ -30,16 +34,20 @@ class AlarmListViewModel(private val packageName: String) : ViewModel() {
     }
 
     fun addAlarm(alarm: Alarm) {
-        _items.value = _items.value + alarm
+        viewModelScope.launch {
+            repo.saveAlarm(alarm)
+        }
     }
 
     fun removeAlarm(alarm: Alarm) {
-        _items.value = _items.value - alarm
+        viewModelScope.launch {
+            repo.deleteAlarm(alarm)
+        }
     }
 
     fun updateItem(alarm: Alarm) {
-        _items.value = _items.value.map {
-            if (it.id == alarm.id) alarm else it
+        viewModelScope.launch {
+            repo.saveAlarm(alarm)
         }
     }
 
