@@ -42,8 +42,10 @@ class AlarmScheduler(private val context: Context) {
                     dayCalendar.add(Calendar.WEEK_OF_YEAR, 1)
                 }
 
-                val intent = Intent(context, AlarmReceiver::class.java).let { intent ->
-                    PendingIntent.getBroadcast(context, 0, intent, 0)
+                val intent = Intent(context, AlarmReceiver::class.java).apply {
+                    putExtra("alarm", alarm)
+                }.let { intent ->
+                    PendingIntent.getBroadcast(context, alarm.id.hashCode() + i, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
                 }
 
                 alarmManager.setRepeating(
