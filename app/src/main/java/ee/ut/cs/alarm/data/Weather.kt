@@ -2,12 +2,7 @@ package ee.ut.cs.alarm.data
 
 import android.util.Log
 import org.xmlpull.v1.XmlPullParserFactory
-import java.io.BufferedInputStream
-import java.io.BufferedReader
-import java.io.ByteArrayOutputStream
-import java.io.InputStreamReader
 import java.io.StringReader
-import java.net.HttpURLConnection
 import java.net.URL
 import org.xmlpull.v1.XmlPullParser as xpp
 
@@ -111,5 +106,9 @@ data class Weather(val temperature: Float, val phenomenon: String, val windspeed
             return Weather(temperature, phenomenon, windspeed)
 
         }
+    }
+
+    fun getString(): String {
+        return "$temperature°C | Wind $windspeed m/s | $phenomenon"
     }
 }
