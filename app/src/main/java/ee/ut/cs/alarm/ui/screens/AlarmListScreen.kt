@@ -1,10 +1,11 @@
 package ee.ut.cs.alarm.ui.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
@@ -19,28 +20,33 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import ee.ut.cs.alarm.alarming.AlarmScheduler
 import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.service.AlarmScheduler
+import ee.ut.cs.alarm.ui.components.AlarmCard
+import ee.ut.cs.alarm.ui.components.EditAlarmDialog
 import ee.ut.cs.alarm.ui.navigation.Screen
+import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmListScreen(
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    vm: AlarmListViewModel,
+    alarmScheduler: AlarmScheduler
 ) {
-    val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
+    val alarms by vm.items.collectAsState()
+
+    var showDialog by remember { mutableStateOf(false) }
+    var editableAlarm by remember { mutableStateOf(Alarm()) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -64,13 +70,12 @@ fun AlarmListScreen(
                     }
                 }
             )
-        },
+         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    Toast.makeText(context, "Clicked add!", Toast.LENGTH_LONG).show()
-                    val alarmScheduler = AlarmScheduler(context)
-                    alarmScheduler.scheduleAlarm(Alarm())
+                    editableAlarm = Alarm()
+                    showDialog = true
                 }
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
@@ -80,23 +85,54 @@ fun AlarmListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(padding),
         ) {
-            Text(
-                text = "My Alarms",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            if (alarms.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No alarms set\nTap + to add your first alarm",
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                LazyColumn {
+                    items(
+                        items = alarms,
+                        key = { it.id }
+                    ) { alarm ->
+                        AlarmCard(
+                            alarm = alarm,
+                            onToggleEnabled = {enabled -> vm.updateItem(alarm.copy(enabled=enabled))},
+                            onDelete = {
+                                vm.removeAlarm(alarm)
+                            },
+                            onEdit = {
+                                showDialog = true
+                                editableAlarm = alarm
+                            }
+                        )
+                    }
+                }
+            }
 
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No alarms set\nTap + to add your first alarm",
-                    textAlign = TextAlign.Center,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            if (showDialog) {
+                EditAlarmDialog(
+                    editableAlarm,
+                    {showDialog = false},
+                    { alarmToSave ->
+                        if (vm.hasAlarm(alarmToSave)) {
+                            alarmScheduler.cancelAlarm(alarmToSave.id)
+                            vm.updateItem(alarmToSave)
+                        } else {
+                            vm.addAlarm(alarmToSave)
+                        }
+                        alarmScheduler.scheduleAlarm(alarmToSave)
+                        showDialog = false
+                    }
                 )
             }
         }

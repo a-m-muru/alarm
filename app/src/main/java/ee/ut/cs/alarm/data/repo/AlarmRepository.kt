@@ -30,7 +30,8 @@ object AlarmListSerializer : Serializer<AlarmListProto> {
 }
 
 interface AlarmRepository {
-    suspend fun saveAlarm(alarm: Alarm);
+    suspend fun getAlarms(): Flow<List<Alarm>>
+    suspend fun saveAlarm(alarm: Alarm)
     suspend fun deleteAlarm(alarm: Alarm);
     suspend fun getAlarmByID(alarmID: UUID): Alarm?;
 }
@@ -41,11 +42,13 @@ class AlarmRepositoryImpl private constructor(private val context: Context) : Al
         serializer = AlarmListSerializer
     )
 
-    val alarms: Flow<List<Alarm>> = context.alarmDataStore.data
-        .catch { exception -> throw exception }
-        .map { alarmList ->
-            alarmList.alarmsList.map { Alarm.fromProto(it) }
-        }
+    override suspend fun getAlarms(): Flow<List<Alarm>> {
+        return context.alarmDataStore.data
+            .catch { exception -> throw exception }
+            .map { alarmList ->
+                alarmList.alarmsList.map { Alarm.fromProto(it) }
+            }
+    }
 
     override suspend fun saveAlarm(alarm: Alarm) {
         context.alarmDataStore.updateData { currentList ->
