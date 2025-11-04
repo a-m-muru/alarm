@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.service.AlarmScheduler
 import ee.ut.cs.alarm.ui.components.AlarmCard
@@ -85,7 +86,7 @@ fun AlarmListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
         ) {
             if (alarms.isEmpty()) {
                 Box(
@@ -99,7 +100,7 @@ fun AlarmListScreen(
                     )
                 }
             } else {
-                LazyColumn {
+                LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 48.dp)) {
                     items(
                         items = alarms,
                         key = { it.id }
