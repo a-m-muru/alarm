@@ -48,10 +48,8 @@ class AlarmScheduler(private val context: Context) {
                     PendingIntent.getBroadcast(context, alarm.id.hashCode() + i, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
                 }
 
-                alarmManager.setRepeating(
-                    AlarmManager.RTC_WAKEUP,
-                    dayCalendar.timeInMillis,
-                    1000 * 60 * 60 * 24 * 7,
+                alarmManager.setAlarmClock(
+                    AlarmManager.AlarmClockInfo(dayCalendar.timeInMillis, null),
                     intent
                 )
             }

@@ -19,8 +19,8 @@ class AlarmReceiver : BroadcastReceiver() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
-        context.startActivity(alarmIntent)
         showAlarmNotification(context, "asaskasldasd")
+        context.startActivity(alarmIntent)
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)

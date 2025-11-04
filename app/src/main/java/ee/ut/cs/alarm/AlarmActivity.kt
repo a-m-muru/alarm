@@ -102,12 +102,12 @@ class AlarmActivity : ComponentActivity() {
 //            Text("yeyeyayhs")
 //        }
         val alarm = intent.getParcelableExtra<Alarm>("alarm") as Alarm
+        Log.i("ALARM SCREEN", "" + alarm)
         val cal = Calendar.getInstance()
-        cal.setTimeInMillis(alarm.time.toLong())
         val timeFmt = DateFormat.getTimeInstance(DateFormat.SHORT)
         val dateFmt = SimpleDateFormat("EEEE dd MMMM")
         val timeString = timeFmt.format(cal.time).toString()
-        val dateString = dateFmt.format(cal.get(Calendar.DAY_OF_WEEK_IN_MONTH))
+        val dateString = dateFmt.format(cal.time)
 
         val coroutineScope = rememberCoroutineScope()
         var weatherText by remember { mutableStateOf("Fetching weather...")}

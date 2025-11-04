@@ -82,4 +82,8 @@ data class Alarm(
             .setEnabled(enabled)
             .build()
     }
+
+    override fun toString(): String {
+        return "Alarm $id; time $time; label $label"
+    }
 }
