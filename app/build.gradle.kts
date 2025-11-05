@@ -54,6 +54,8 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.protobuf.javalite)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.retrofit2.retrofit)
+    implementation(libs.retrofit2.converter.simplexml)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
