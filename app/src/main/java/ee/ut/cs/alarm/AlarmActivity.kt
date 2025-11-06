@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -33,13 +32,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.data.Alarm
-import ee.ut.cs.alarm.data.Weather
 import ee.ut.cs.alarm.gaming.GoIntoTheLight
 import ee.ut.cs.alarm.gaming.JumpingJacks
+import ee.ut.cs.alarm.service.WeatherAPI
+import ee.ut.cs.alarm.service.WeatherAPIHelper
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.create
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -114,10 +115,11 @@ class AlarmActivity : ComponentActivity() {
 
         LaunchedEffect(Unit) {
             coroutineScope.launch {
-                val weather = withContext(Dispatchers.IO) {
-                    Weather.fromRequest()
+                val observations = withContext(Dispatchers.IO) {
+                    WeatherAPIHelper.getInstance().create<WeatherAPI>().getWeatherObservations()
                 }
-                weatherText = weather.getString()
+                if (observations.body() != null && observations.body()?.stations?.isNotEmpty() == true)
+                    weatherText = String.format("%f°C", observations.body()?.stations?.get(0)?.airTemperature)
             }
         }
 
