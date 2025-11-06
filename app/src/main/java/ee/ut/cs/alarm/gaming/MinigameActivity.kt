@@ -22,6 +22,10 @@ class Vec2(var x: Float, var y: Float) {
         y += v.y
         return this
     }
+
+    operator fun times(mul: Float): Vec2 {
+        return Vec2(x*mul, y*mul)
+    }
 }
 
 @Composable

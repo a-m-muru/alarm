@@ -74,8 +74,6 @@ fun SensorScreen(onNavigateBack: () -> Unit) {
     //val gyroscope = remember { sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE) }
     val orientation = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) }
 
-
-
     // State to hold sensor data strings
     //var accelerometerDataString by remember { mutableStateOf("Waiting for data...") }
     var accelerometerData by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }

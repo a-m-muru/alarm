@@ -32,10 +32,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Weather
+import ee.ut.cs.alarm.gaming.BalanceHole
 import ee.ut.cs.alarm.gaming.GoIntoTheLight
 import ee.ut.cs.alarm.gaming.JumpingJacks
+import ee.ut.cs.alarm.gaming.SensorScreen
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -158,9 +161,14 @@ class AlarmActivity : ComponentActivity() {
     fun MinigameScreen(id: Int) {
         val navback = { finish() }
 
+        // test
+        //BalanceHole(onNavigateBack = navback)
+        //SensorScreen(onNavigateBack = navback)
+        return
         when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
             1 -> GoIntoTheLight(onNavigateBack = navback)
+            2 -> BalanceHole(onNavigateBack = navback)
         }
     }
 

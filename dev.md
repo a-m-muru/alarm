@@ -2,9 +2,11 @@
 
 ## Alarm
 
-- notification: play ringtone
-- notification: be annoying stay in foreground
-- notification: open alarmactivity when tapped
-- activity: play ringtone
-- make ringtone
+- notification
+    - [ ] play ringtone noise
+    - [ ] don't allow being swiped off
+    - [ ] keep ringing!
+    - [ ] open alarmactivity when tapped
+- alarmactivity: play ringtone
+- make ringtones
 - make more minigames

@@ -39,7 +39,8 @@
             android:showWhenLocked="true"
             android:taskAffinity=""
             android:theme="@style/Theme.Alarm"
-            android:turnScreenOn="true" >
+            android:turnScreenOn="true"
+            android:screenOrientation="portrait">
         </activity>
 
 
