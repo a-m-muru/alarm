@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Bundle
-import android.os.PersistableBundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,13 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.lifecycleScope
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Weather
 import ee.ut.cs.alarm.gaming.BalanceHole
 import ee.ut.cs.alarm.gaming.GoIntoTheLight
 import ee.ut.cs.alarm.gaming.JumpingJacks
-import ee.ut.cs.alarm.gaming.SensorScreen
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,17 +45,16 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import kotlin.random.Random
 
-
 class AlarmActivity : ComponentActivity() {
-
     var minigameId: Int = 0
 
     // this disables switching active apps
     override fun onPause() {
         super.onPause()
 
-        val activityManager = getApplicationContext()
-            .getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        val activityManager =
+            getApplicationContext()
+                .getSystemService(ACTIVITY_SERVICE) as ActivityManager
 
         activityManager.moveTaskToFront(getTaskId(), 0)
     }
@@ -93,10 +89,12 @@ class AlarmActivity : ComponentActivity() {
         minigameId = savedInstanceState.getInt("minigameId")
     }
 
-
     @SuppressLint("SimpleDateFormat")
     @Composable
-    fun AlarmScreen(ctx: Context, modifier: Modifier) {
+    fun AlarmScreen(
+        ctx: Context,
+        modifier: Modifier,
+    ) {
 //        Text("asdasdasd")
 //        GameLoob(this)
 //        Button(
@@ -113,13 +111,14 @@ class AlarmActivity : ComponentActivity() {
         val dateString = dateFmt.format(cal.time)
 
         val coroutineScope = rememberCoroutineScope()
-        var weatherText by remember { mutableStateOf("Fetching weather...")}
+        var weatherText by remember { mutableStateOf("Fetching weather...") }
 
         LaunchedEffect(Unit) {
             coroutineScope.launch {
-                val weather = withContext(Dispatchers.IO) {
-                    Weather.fromRequest()
-                }
+                val weather =
+                    withContext(Dispatchers.IO) {
+                        Weather.fromRequest()
+                    }
                 weatherText = weather.getString()
             }
         }
@@ -127,7 +126,7 @@ class AlarmActivity : ComponentActivity() {
         Column(
             modifier = modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Spacer(modifier = Modifier.height(16.dp))
             Text("You have the alarm!", fontSize = 24.sp)
@@ -136,21 +135,22 @@ class AlarmActivity : ComponentActivity() {
             Text(weatherText, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(16.dp))
             Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxSize()
-                    .background(
-                        Brush.sweepGradient(
-                            listOf(
-                                Color.Magenta,
-                                Color.Blue,
-                                Color.Black,
-                                Color.Blue,
-                                Color.Magenta
-                            )
-                        )
-                    ),
-                verticalArrangement = Arrangement.Center
+                modifier =
+                    Modifier
+                        .padding(8.dp)
+                        .fillMaxSize()
+                        .background(
+                            Brush.sweepGradient(
+                                listOf(
+                                    Color.Magenta,
+                                    Color.Blue,
+                                    Color.Black,
+                                    Color.Blue,
+                                    Color.Magenta,
+                                ),
+                            ),
+                        ),
+                verticalArrangement = Arrangement.Center,
             ) {
                 MinigameScreen(minigameId)
             }
@@ -162,8 +162,8 @@ class AlarmActivity : ComponentActivity() {
         val navback = { finish() }
 
         // test
-        //BalanceHole(onNavigateBack = navback)
-        //SensorScreen(onNavigateBack = navback)
+        // BalanceHole(onNavigateBack = navback)
+        // SensorScreen(onNavigateBack = navback)
         return
         when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
@@ -171,5 +171,4 @@ class AlarmActivity : ComponentActivity() {
             2 -> BalanceHole(onNavigateBack = navback)
         }
     }
-
 }

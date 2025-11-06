@@ -14,9 +14,11 @@ import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.data.Alarm
 
-
 class AlarmReceiver : BroadcastReceiver() {
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         val alarm = intent.getParcelableExtra<Alarm>("alarm")
         if (alarm == null) {
             Log.e("ALARM RECEIVER", "alarm was null!! stopping anything")
@@ -26,10 +28,11 @@ class AlarmReceiver : BroadcastReceiver() {
         Log.i("ALARM RECEIVER", "packing up and sending $alarm")
 
         if (canStartActivity(context)) {
-            val alarmIntent = Intent(context, AlarmActivity::class.java).apply {
-                putExtra("alarm", alarm)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
+            val alarmIntent =
+                Intent(context, AlarmActivity::class.java).apply {
+                    putExtra("alarm", alarm)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
 
             context.startActivity(alarmIntent)
         } else {
@@ -54,12 +57,14 @@ class AlarmReceiver : BroadcastReceiver() {
             }
         }
 
-        val notifBuilder = NotificationCompat.Builder(ctx, channelID)
-            .setSmallIcon(R.drawable.ic_launcher_background)
-            .setContentTitle("WAKE nice UP!!!!!!!!!!")
-            .setContentText(":) pls wake up \uD83D\uDC9D \uD83D\uDC9D \uD83D\uDC9D")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(false)
+        val notifBuilder =
+            NotificationCompat
+                .Builder(ctx, channelID)
+                .setSmallIcon(R.drawable.ic_launcher_background)
+                .setContentTitle("WAKE nice UP!!!!!!!!!!")
+                .setContentText(":) pls wake up \uD83D\uDC9D \uD83D\uDC9D \uD83D\uDC9D")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(false)
 
         val notifManager = ctx.getSystemService(NotificationManager::class.java)
         notifManager.notify(1, notifBuilder.build())
@@ -82,5 +87,4 @@ class AlarmReceiver : BroadcastReceiver() {
         }
         return false // App is not in the foreground
     }
-
 }

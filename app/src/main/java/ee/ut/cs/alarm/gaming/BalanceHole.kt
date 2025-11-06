@@ -40,7 +40,6 @@ import kotlin.random.Random
 // https://medium.com/autodesk-tlv/how-to-write-games-for-android-and-ios-with-kotlin-in-jetpack-compose-b9ac35514238
 
 class GameEngine {
-
     private var totalTime by mutableStateOf(0L)
     private var prevTime = 0L
     private var frames = 0L
@@ -75,9 +74,7 @@ class GameEngine {
         frames += 1
     }
 
-    override fun toString(): String {
-        return "balls: " + balls + "; time: ${(totalTime / 1E8).roundToInt() / 10f}, orientation: $rotation"
-    }
+    override fun toString(): String = "balls: " + balls + "; time: ${(totalTime / 1E8).roundToInt() / 10f}, orientation: $rotation"
 }
 
 class Ball(
@@ -85,15 +82,18 @@ class Ball(
     radius: Float,
 ) {
     val BOUNCE_ENERGY_MULT = 0.9f
-    val FRICTION = 0.2f;
+    val FRICTION = 0.2f
 
     var vel by mutableStateOf(Vec2(30f, 70f))
     var pos by mutableStateOf(pos)
     var radius by mutableStateOf(radius)
 
-    fun update(deltaT: Float, engine: GameEngine) {
-        //Log.i("ball", "position: " + pos.x + " " + pos.y)
-        //Log.i("ball", "delta: " + deltaT)
+    fun update(
+        deltaT: Float,
+        engine: GameEngine,
+    ) {
+        // Log.i("ball", "position: " + pos.x + " " + pos.y)
+        // Log.i("ball", "delta: " + deltaT)
         pos.x += vel.x * deltaT
         vel.x += engine.rotation.y * deltaT * 10f
         vel.y += engine.rotation.x * deltaT * 10f
@@ -119,14 +119,11 @@ class Ball(
         vel.y -= deltaT * FRICTION * sign(vel.y)
     }
 
-    override fun toString(): String {
-        return "" + xOffset + " " + yOffset
-    }
+    override fun toString(): String = "" + xOffset + " " + yOffset
 }
 
 val Ball.xOffset: Dp get() = pos.x.dp - radius.dp
 val Ball.yOffset: Dp get() = pos.y.dp - radius.dp
-
 
 @Composable
 fun BalanceHole(onNavigateBack: () -> Unit) {
@@ -139,24 +136,28 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     val orientation = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) }
 
-    var gyroscopeData by remember { mutableStateOf( Vec3(0f, 0f, 0f)) }
+    var gyroscopeData by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
 
     DisposableEffect(sensorManager) {
-        val sensorEventListener = object : SensorEventListener {
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // who car?
+        val sensorEventListener =
+            object : SensorEventListener {
+                override fun onAccuracyChanged(
+                    sensor: Sensor?,
+                    accuracy: Int,
+                ) {
+                    // who car?
+                }
+
+                override fun onSensorChanged(event: SensorEvent?) {
+                    when (event?.sensor?.type) {
+                        Sensor.TYPE_ROTATION_VECTOR -> {
+                            gameEngine.rotation = Vec3(event.values[0], event.values[1], event.values[2])
+                        }
+                    }
+                }
             }
 
-            override fun onSensorChanged(event: SensorEvent?) {
-               when (event?.sensor?.type) {
-                   Sensor.TYPE_ROTATION_VECTOR -> {
-                       gameEngine.rotation = Vec3(event.values[0], event.values[1], event.values[2])
-                   }
-               }
-            }
-        }
-
-        orientation?.let{
+        orientation?.let {
             sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_FASTEST)
         }
 
@@ -174,17 +175,19 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .clipToBounds()
-            .onSizeChanged {
-                with(density) {
-                    gameEngine.screenWidth = it.width.toDp()
-                    gameEngine.screenHeight = it.height.toDp()
-                }
-            }) {
-        //Text("" + gameEngine)
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .clipToBounds()
+                .onSizeChanged {
+                    with(density) {
+                        gameEngine.screenWidth = it.width.toDp()
+                        gameEngine.screenHeight = it.height.toDp()
+                    }
+                },
+    ) {
+        // Text("" + gameEngine)
         gameEngine.balls.forEach { DrawBall(it) }
     }
 }
@@ -197,6 +200,6 @@ fun DrawBall(ball: Ball) {
             .offset(ball.xOffset, ball.yOffset)
             .size(size * 2)
             .clip(CircleShape)
-            .background(Color.Red)
+            .background(Color.Red),
     )
 }

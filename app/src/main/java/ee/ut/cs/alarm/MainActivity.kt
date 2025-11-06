@@ -21,10 +21,11 @@ class MainActivity : ComponentActivity() {
         permissionManager = PermissionManager(this)
 
         if (false) {
-            val alarmIntent = Intent(this, AlarmActivity::class.java).apply {
-                putExtra("alarm", Alarm(time=48u))
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }
+            val alarmIntent =
+                Intent(this, AlarmActivity::class.java).apply {
+                    putExtra("alarm", Alarm(time = 48u))
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
 
             startActivity(alarmIntent)
         }
@@ -39,7 +40,7 @@ class MainActivity : ComponentActivity() {
                 }
 
                 AlarmNavigation(
-                    navController = navController
+                    navController = navController,
                 )
             }
         }

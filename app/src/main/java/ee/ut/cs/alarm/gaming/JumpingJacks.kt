@@ -30,9 +30,8 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sqrt
 
-
 @Composable
-fun JumpingJacks(onNavigateBack: () -> Unit){
+fun JumpingJacks(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
 
@@ -49,7 +48,6 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
     val neededAcceleration = 30
     val victory by remember { mutableStateOf(false) }
 
-
     // rotation
     var isUpsideDown by remember { mutableStateOf(false) }
     var nextPos by remember { mutableStateOf(false) }
@@ -57,40 +55,48 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
     val deviceUpVector = floatArrayOf(0f, 1f, 0f)
     val rotationMatrix = FloatArray(9)
 
+    DisposableEffect(sensorManager) {
+        val sensorEventListener =
+            object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    when (event?.sensor?.type) {
+                        Sensor.TYPE_LINEAR_ACCELERATION -> {
+                            val acc = Vec3(event.values[0], event.values[1], event.values[2])
+                            accelerometerData = acc
+                        }
 
-    DisposableEffect(sensorManager){
-        val sensorEventListener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent?) {
-                when (event?.sensor?.type) {
-                    Sensor.TYPE_LINEAR_ACCELERATION -> {
-                        val acc = Vec3(event.values[0], event.values[1], event.values[2])
-                        accelerometerData = acc
+                        Sensor.TYPE_ROTATION_VECTOR -> {
+                            SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
+
+                            worldUpVector.x =
+                                rotationMatrix[0] * deviceUpVector[0] + rotationMatrix[1] * deviceUpVector[1] +
+                                rotationMatrix[2] * deviceUpVector[2]
+                            worldUpVector.y =
+                                rotationMatrix[3] * deviceUpVector[0] + rotationMatrix[4] * deviceUpVector[1] +
+                                rotationMatrix[5] * deviceUpVector[2]
+                            worldUpVector.z =
+                                rotationMatrix[6] * deviceUpVector[0] + rotationMatrix[7] * deviceUpVector[1] +
+                                rotationMatrix[8] * deviceUpVector[2]
+
+                            isUpsideDown = worldUpVector.z < 0
+                        }
                     }
-
-                    Sensor.TYPE_ROTATION_VECTOR -> {
-
-                        SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
-
-                        worldUpVector.x =
-                            rotationMatrix[0] * deviceUpVector[0] + rotationMatrix[1] * deviceUpVector[1] + rotationMatrix[2] * deviceUpVector[2]
-                        worldUpVector.y =
-                            rotationMatrix[3] * deviceUpVector[0] + rotationMatrix[4] * deviceUpVector[1] + rotationMatrix[5] * deviceUpVector[2]
-                        worldUpVector.z =
-                            rotationMatrix[6] * deviceUpVector[0] + rotationMatrix[7] * deviceUpVector[1] + rotationMatrix[8] * deviceUpVector[2]
-
-                        isUpsideDown = worldUpVector.z < 0
+                    if (accelerometerData.length() > neededAcceleration && (nextPos == isUpsideDown) &&
+                        (worldUpVector.z > 0.7 || worldUpVector.z < -0.8)
+                    ) {
+                        nextPos = !nextPos
+                        currentCount++
+                        AudioPlayer.playSound(context, R.raw.good)
                     }
                 }
-                if (accelerometerData.length() > neededAcceleration && (nextPos == isUpsideDown) && (worldUpVector.z > 0.7 || worldUpVector.z < -0.8 )){
-                    nextPos = !nextPos
-                    currentCount++
-                    AudioPlayer.playSound(context, R.raw.good)
+
+                override fun onAccuracyChanged(
+                    sensor: Sensor?,
+                    accuracy: Int,
+                ) {
+                    // You can handle accuracy changes here if needed
                 }
             }
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-                // You can handle accuracy changes here if needed
-            }
-        }
         linearAccelerometer?.let {
             sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_GAME)
         }
@@ -106,14 +112,13 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text = "Jumping Jacks", fontSize = 24.sp)
         Spacer(modifier = Modifier.height(32.dp))
 
         Text(text = "Count: $currentCount/$neededCount")
         Spacer(modifier = Modifier.height(24.dp))
-
 
         if (currentCount >= neededCount) {
             Text(text = "Congratulations! You did it!", fontSize = 24.sp)
@@ -122,6 +127,5 @@ fun JumpingJacks(onNavigateBack: () -> Unit){
                 Text("Go Back")
             }
         }
-
     }
 }
