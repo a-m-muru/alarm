@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.REORDER_TASKS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"/>
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -43,6 +44,10 @@
             android:turnScreenOn="true"
             android:screenOrientation="portrait">
         </activity>
+        <service android:name=".service.AlarmForegroundService"
+            android:foregroundServiceType="mediaPlayback"
+            android:permission="android.permission.FOREGROUND_SERVICE"
+            android:exported="false"/>
 
 
         <receiver android:name=".service.AlarmReceiver" />

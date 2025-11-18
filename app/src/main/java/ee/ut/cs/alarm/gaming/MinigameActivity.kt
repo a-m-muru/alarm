@@ -13,7 +13,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import kotlin.math.pow
 import kotlin.math.sin
+import kotlin.math.sqrt
 
 
 class Vec2(var x: Float, var y: Float) {
@@ -25,6 +27,14 @@ class Vec2(var x: Float, var y: Float) {
 
     operator fun times(mul: Float): Vec2 {
         return Vec2(x*mul, y*mul)
+    }
+
+    fun distanceTo(v: Vec2): Float {
+        return sqrt((x-v.x).toDouble().pow(2) + (y-v.y).toDouble().pow(2)).toFloat()
+    }
+
+    fun length(): Float {
+        return sqrt(x.toDouble().pow(2) + y.toDouble().pow(2)).toFloat()
     }
 }
 
