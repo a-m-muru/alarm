@@ -68,7 +68,7 @@ data class Alarm(
         dest.writeString(label)
         dest.writeString(ringtoneUri)
         dest.writeLong(createdAt)
-        dest.writeByte(if (enabled)  0x01b else 0x00)
+        dest.writeByte(if (enabled) 0x01.toByte() else 0x00)
     }
 
     fun toProto(): AlarmProto {
