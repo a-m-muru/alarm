@@ -8,7 +8,9 @@ import ee.ut.cs.alarm.data.Alarm
 import java.util.Calendar
 import java.util.UUID
 
-class AlarmScheduler(private val context: Context) {
+class AlarmScheduler(
+    private val context: Context,
+) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     fun scheduleAlarm(alarm: Alarm) {
@@ -42,15 +44,22 @@ class AlarmScheduler(private val context: Context) {
                     dayCalendar.add(Calendar.WEEK_OF_YEAR, 1)
                 }
 
-                val intent = Intent(context, AlarmReceiver::class.java).apply {
-                    putExtra("alarm", alarm)
-                }.let { intent ->
-                    PendingIntent.getBroadcast(context, alarm.id.hashCode() + i, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-                }
+                val intent =
+                    Intent(context, AlarmReceiver::class.java)
+                        .apply {
+                            putExtra("alarm", alarm)
+                        }.let { intent ->
+                            PendingIntent.getBroadcast(
+                                context,
+                                alarm.id.hashCode() + i,
+                                intent,
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                            )
+                        }
 
                 alarmManager.setAlarmClock(
                     AlarmManager.AlarmClockInfo(dayCalendar.timeInMillis, null),
-                    intent
+                    intent,
                 )
             }
 
@@ -61,12 +70,13 @@ class AlarmScheduler(private val context: Context) {
     fun cancelAlarm(id: UUID) {
         for (i in 1..7) {
             val intent = Intent(context, AlarmReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                id.hashCode() + i,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
+            val pendingIntent =
+                PendingIntent.getBroadcast(
+                    context,
+                    id.hashCode() + i,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                )
             alarmManager.cancel(pendingIntent)
         }
     }
