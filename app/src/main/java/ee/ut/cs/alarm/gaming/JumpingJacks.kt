@@ -1,16 +1,19 @@
 package ee.ut.cs.alarm.gaming
 
 import android.content.Context
+import android.graphics.Paint
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,21 +25,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.Vec3
-import kotlin.math.pow
-import kotlin.math.round
-import kotlin.math.sqrt
+import ee.ut.cs.alarm.ui.components.FilteredImage
 
 @Composable
 fun JumpingJacks(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
-    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    val sensorManager =
+        remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
 
     // Sensors
-    val linearAccelerometer = remember { sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) }
+    val linearAccelerometer =
+        remember { sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION) }
     val orientation = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) }
 
     // sensor data
@@ -115,9 +120,19 @@ fun JumpingJacks(onNavigateBack: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(text = "Jumping Jacks", fontSize = 24.sp)
+        Image(
+            modifier = Modifier.size(256.dp),
+            painter = painterResource(id = R.drawable.jumping_jacks_instruction),
+            contentDescription = "How to Jump",
+        )
+        Text(
+            text = "Flail your arms up and down to wake up! Don't let go of your phone!!!",
+            fontSize = 24.sp,
+            textAlign = TextAlign.Center,
+        )
         Spacer(modifier = Modifier.height(32.dp))
 
-        Text(text = "Count: $currentCount/$neededCount")
+        Text(text = "Count: $currentCount/$neededCount", fontSize = 32.sp)
         Spacer(modifier = Modifier.height(24.dp))
 
         if (currentCount >= neededCount) {

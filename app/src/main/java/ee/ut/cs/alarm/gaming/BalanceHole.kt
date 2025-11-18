@@ -5,17 +5,19 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import androidx.compose.foundation.background
+import android.media.MediaPlayer
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,16 +31,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.rotationMatrix
+import androidx.compose.ui.zIndex
+import ee.ut.cs.alarm.R
 import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.math.sign
@@ -49,6 +57,11 @@ import kotlin.random.Random
 // https://medium.com/autodesk-tlv/how-to-write-games-for-android-and-ios-with-kotlin-in-jetpack-compose-b9ac35514238
 
 class GameEngine {
+    companion object {
+        lateinit var bounceSound: MediaPlayer
+        lateinit var holeSound: MediaPlayer
+    }
+
     private var totalTime by mutableStateOf(0L)
     private var prevTime = 0L
     private var frames = 0L
@@ -61,16 +74,23 @@ class GameEngine {
     var balls = mutableStateListOf<Ball>()
     var holes = mutableStateListOf<Hole>()
 
-
-    fun startGame() {
+    fun startGame(ctx: Context) {
         balls.clear()
         holes.clear()
+
+        bounceSound = MediaPlayer.create(ctx, R.raw.bump)
+        holeSound = MediaPlayer.create(ctx, R.raw.good)
 
         repeat(8) {
             var ball =
                 Ball(
-                    pos = Vec2(Random.nextFloat() * 30 + 50, round(Random.nextFloat() * 5) * 20 + 50),
+                    pos =
+                        Vec2(
+                            Random.nextFloat() * 30 + 50,
+                            round(Random.nextFloat() * 5) * 20 + 50,
+                        ),
                     radius = Random.nextFloat() * 20 + 10f,
+                    rotation = 0f,
                 )
             ball.vel = Vec2(Random.nextFloat() * 20f + -10f, Random.nextFloat() * 20f + -10f)
 
@@ -84,39 +104,37 @@ class GameEngine {
             }
         }
 
-
         val hole =
             Hole(
                 pos = Vec2(0f, 0f),
-                radius = biggestBallRadious * 1.2f
+                radius = biggestBallRadious * 1.2f,
             )
-        hole.pos = Vec2(
-            Random.nextFloat() *
+        hole.pos =
+            Vec2(
+                Random.nextFloat() *
                     (screenWidth.value - 2 * hole.radius) + hole.radius,
-            Random.nextFloat() *
-                    (screenHeight.value - 2 * hole.radius) + hole.radius
-        )
+                Random.nextFloat() *
+                    (screenHeight.value - 2 * hole.radius) + hole.radius,
+            )
 
         holes.add(hole)
 
-
-        repeat(3){
+        repeat(3) {
             val hole =
                 Hole(
                     pos = Vec2(0f, 0f),
                     radius = Random.nextFloat() * biggestBallRadious + 15f,
                 )
-            hole.pos = Vec2(
-                Random.nextFloat() *
-                        (screenWidth.value-2*hole.radius) + hole.radius,
-                Random.nextFloat() *
-                        (screenHeight.value-2*hole.radius) + hole.radius
-            )
-
+            hole.pos =
+                Vec2(
+                    Random.nextFloat() *
+                        (screenWidth.value - 2 * hole.radius) + hole.radius,
+                    Random.nextFloat() *
+                        (screenHeight.value - 2 * hole.radius) + hole.radius,
+                )
 
             holes.add(hole)
         }
-
     }
 
     fun update(time: Long) {
@@ -135,17 +153,22 @@ class GameEngine {
                     val distance = ball.pos.distanceTo(hole.pos)
 
                     // Check if the ball is inside the hole
-                    if (distance < (hole.radius - ball.radius)) {
-                        if (ball.vel.length() < 200f) {
+                    if (distance < ball.radius && hole.radius > ball.radius) {
+                        if (ball.vel.length() < 100f) {
                             balls.remove(ball)
+                            if (holeSound.isPlaying) {
+                                holeSound.seekTo(0)
+                            } else {
+                                holeSound.start()
+                            }
                             return
+                        } else if (ball.vel.length() < 300f) {
+                            ball.vel *= 1.5f
                         }
                     }
                 }
             }
         }
-
-
 
         frames += 1
     }
@@ -164,6 +187,7 @@ class Hole(
 class Ball(
     pos: Vec2,
     radius: Float,
+    var rotation: Float,
 ) {
     val BOUNCE_ENERGY_MULT = 0.9f
     val FRICTION = 0.2f
@@ -173,8 +197,18 @@ class Ball(
     val MAX_VEL = 10000f
 
     var vel by mutableStateOf(Vec2(30f, 70f))
+    var rotaVel by mutableStateOf(0f)
     var pos by mutableStateOf(pos)
     var radius by mutableStateOf(radius)
+
+    fun bounce() {
+        if (GameEngine.bounceSound.isPlaying) {
+            GameEngine.bounceSound.seekTo(0)
+        } else {
+            GameEngine.bounceSound.start()
+        }
+        rotaVel += Random.nextFloat() * 60 - 30
+    }
 
     fun update(
         deltaT: Float,
@@ -182,14 +216,12 @@ class Ball(
     ) {
         // Log.i("ball", "position: " + pos.x + " " + pos.y)
         // Log.i("ball", "delta: " + deltaT)
+        rotation += rotaVel * deltaT
 
-        //todo if z is negative, go crazy
         if (engine.rotation.z < 0) {
             vel.x = Random.nextFloat() * 10000f - 5000f
             vel.y = Random.nextFloat() * 10000f - 5000f
         }
-
-
 
         vel.x += engine.rotation.x * deltaT * ACC_MULT
         pos.x += vel.x * deltaT
@@ -199,11 +231,13 @@ class Ball(
         if ((pos.x + radius).dp > engine.screenWidth) {
             pos.x = engine.screenWidth.value - radius
             vel.x *= -BOUNCE_ENERGY_MULT
+            bounce()
         }
         // Left wall
         if ((pos.x - radius).dp < 0.dp) {
             pos.x = 0.dp.value + radius
             vel.x *= -BOUNCE_ENERGY_MULT
+            bounce()
         }
 
         // Wall collision y
@@ -213,11 +247,13 @@ class Ball(
         if ((pos.y + radius).dp > engine.screenHeight) {
             pos.y = engine.screenHeight.value - radius
             vel.y *= -BOUNCE_ENERGY_MULT
+            bounce()
         }
         // Top wall
         if ((pos.y - radius).dp < 0.dp) {
             pos.y = 0.dp.value + radius
             vel.y *= -BOUNCE_ENERGY_MULT
+            bounce()
         }
 
         pos = Vec2(pos.x, pos.y)
@@ -234,7 +270,7 @@ val Ball.yOffset: Dp get() = pos.y.dp - radius.dp
 @Composable
 fun BalanceHole(onNavigateBack: () -> Unit) {
     val gameEngine = remember { GameEngine() }
-    //gameEngine.startGame()
+    // gameEngine.startGame()
 
     val density = LocalDensity.current
     val context = LocalContext.current
@@ -278,8 +314,9 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
             sensorManager.unregisterListener(sensorEventListener)
         }
     }
+    val ctx = LocalContext.current
     LaunchedEffect(Unit) {
-        gameEngine.startGame()
+        gameEngine.startGame(ctx)
     }
     LaunchedEffect(Unit) {
         while (true) {
@@ -289,39 +326,75 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
         }
     }
 
-    Box(
+    Column(
         modifier =
             Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .clipToBounds()
-                .onSizeChanged {
-                    with(density) {
-                        gameEngine.screenWidth = it.width.toDp()
-                        gameEngine.screenHeight = it.height.toDp()
-                    }
-                },
+                .fillMaxSize()
+                .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        // Text("" + gameEngine)
-        gameEngine.holes.forEach { DrawHole(it) }
-        gameEngine.balls.forEach { DrawBall(it) }
+        Text("Ball hole", fontSize = 24.sp)
+        Text("Tilt every Ball into a Hole of fitting size...", fontSize = 18.sp)
+        Text("Pro tip! Sit up from your bed to angle the balls better", fontSize = 12.sp)
 
-
-        if (gameEngine.balls.isEmpty()) {
-            Box(
-                modifier = Modifier
+        Box(
+            modifier =
+                Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally, // Center items horizontally
-                    verticalArrangement = Arrangement.Center // Center items vertically within the column
+                    .fillMaxHeight()
+                    .clipToBounds()
+                    .onSizeChanged {
+                        with(density) {
+                            gameEngine.screenWidth = it.width.toDp()
+                            gameEngine.screenHeight = it.height.toDp()
+                        }
+                    },
+        ) {
+            Image(
+                painterResource(R.drawable.balls_grass),
+                "background grass",
+                contentScale = ContentScale.FillWidth,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .zIndex(-1f),
+            )
+
+            // Text("" + gameEngine)
+            gameEngine.holes.forEach { DrawHole(it) }
+            gameEngine.balls.forEach { DrawBall(it) }
+
+            if (gameEngine.balls.isEmpty()) {
+                Box(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    Text(text = "Congratulations! You did it!", fontSize = 24.sp)
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = onNavigateBack) {
-                        Text("Go Back")
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally, // Center items horizontally
+                        verticalArrangement = Arrangement.Center, // Center items vertically within the column
+                    ) {
+                        Text(
+                            text = "Congratulations! You did it!",
+                            fontSize = 24.sp,
+                            style =
+                                TextStyle(
+                                    shadow =
+                                        Shadow(
+                                            color = Color.Black,
+                                            offset = Offset(0f, 0f),
+                                            blurRadius = 2f,
+                                        ),
+                                ),
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Button(onClick = onNavigateBack) {
+                            Text("Go Back")
+                        }
                     }
                 }
             }
@@ -336,19 +409,20 @@ fun DrawBall(ball: Ball) {
         Modifier
             .offset(ball.xOffset, ball.yOffset)
             .size(size * 2)
-            .clip(CircleShape)
-            .background(Color.Red),
-    )
+            .rotate(ball.rotation),
+    ) {
+        Image(painterResource(R.drawable.balls_epic), contentDescription = "Ball for hole")
+    }
 }
 
 @Composable
-fun DrawHole(hole: Hole){
+fun DrawHole(hole: Hole) {
     val size = hole.radius.dp
     Box(
         Modifier
             .offset(hole.pos.x.dp - size, hole.pos.y.dp - size)
-            .size(size * 2)
-            .clip(CircleShape)
-            .background(Color.Black),
-    )
+            .size(size * 2),
+    ) {
+        Image(painterResource(R.drawable.balls_hole), contentDescription = "Hole for ball")
+    }
 }

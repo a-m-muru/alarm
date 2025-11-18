@@ -25,6 +25,12 @@ class Vec2(var x: Float, var y: Float) {
         return this
     }
 
+    operator fun minus(v: Vec2): Vec2 {
+        x -= v.x
+        y -= v.y
+        return this
+    }
+
     operator fun times(mul: Float): Vec2 {
         return Vec2(x*mul, y*mul)
     }
