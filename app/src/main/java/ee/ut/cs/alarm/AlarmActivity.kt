@@ -160,9 +160,6 @@ class AlarmActivity : ComponentActivity() {
     fun MinigameScreen(id: Int) {
         val navback = { end() }
 
-        // test
-        BalanceHole(onNavigateBack = navback)
-        // SensorScreen(onNavigateBack = navback)
         when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
             1 -> GoIntoTheLight(onNavigateBack = navback)
