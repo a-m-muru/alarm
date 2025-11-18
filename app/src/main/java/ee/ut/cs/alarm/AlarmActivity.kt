@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Weather
+import ee.ut.cs.alarm.gaming.BalanceHole
 import ee.ut.cs.alarm.gaming.GoIntoTheLight
 import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.service.AlarmForegroundService
@@ -47,7 +48,7 @@ import java.util.Calendar
 
 class AlarmActivity : ComponentActivity() {
     companion object {
-        const val MAX_MINIGAMES = 2
+        const val MAX_MINIGAMES = 3
     }
 
     // this disables switching active apps
@@ -163,7 +164,7 @@ class AlarmActivity : ComponentActivity() {
         when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
             1 -> GoIntoTheLight(onNavigateBack = navback)
-            // 2 -> BalanceHole(onNavigateBack = navback)
+            2 -> BalanceHole(onNavigateBack = navback)
             else -> throw IllegalArgumentException("no minigame with id " + id)
         }
     }

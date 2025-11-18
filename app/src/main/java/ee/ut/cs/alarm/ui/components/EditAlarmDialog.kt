@@ -1,5 +1,9 @@
 package ee.ut.cs.alarm.ui.components
 
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -28,9 +32,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -39,8 +45,11 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Day
+import ee.ut.cs.alarm.service.AlarmScheduler
 import kotlin.experimental.and
 import kotlin.experimental.xor
+import android.provider.Settings
+import kotlinx.coroutines.launch
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -49,6 +58,19 @@ fun EditAlarmDialog(
     onDismissRequest: () -> Unit,
     onSaveRequest: (Alarm) -> Unit
 ) {
+    val context = LocalContext.current
+    val alarmScheduler = remember { AlarmScheduler(context) }
+    val scope = rememberCoroutineScope()
+
+    val openSettingsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        // This block runs when the user returns from the settings screen.
+        // We re-check the permission. If granted, we can proceed with saving.
+        // A more advanced implementation could store the alarm and save it here.
+        // For simplicity, we can ask the user to click "Save" again.
+    }
+
     val timePickerState = rememberTimePickerState(
         initialHour = (alarm.time / 3600u).toInt(),
         initialMinute = ((alarm.time / 60u) % 60u).toInt(),
@@ -91,11 +113,15 @@ fun EditAlarmDialog(
             }
         ) { padding ->
             Surface(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 shape = RoundedCornerShape(0.dp)
             ) {
                 Column(
-                    modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -142,11 +168,25 @@ fun EditAlarmDialog(
 
                     Button(
                         onClick = {
-                            onSaveRequest(alarm.copy(
-                                time = (timePickerState.hour * 3600 + timePickerState.minute * 60).toUInt(),
-                                label = alarmLabel.text,
-                                days = selectedDays
-                            ))
+                            scope.launch {
+                                val newAlarm = alarm.copy(
+                                    time = (timePickerState.hour * 3600 + timePickerState.minute * 60).toUInt(),
+                                    label = alarmLabel.text,
+                                    days = selectedDays
+                                )
+
+                                if (alarmScheduler.canScheduleExactAlarms()) {
+                                    // Permission is granted, proceed with saving.
+                                    onSaveRequest(newAlarm)
+                                } else {
+                                    // Permission is NOT granted.
+                                    // Guide the user to the settings screen.
+                                    // Consider showing a dialog first to explain why.
+                                    val intent =
+                                        Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                                    openSettingsLauncher.launch(intent)
+                                }
+                            }
                         }
                     ) {
                         Text("Save")

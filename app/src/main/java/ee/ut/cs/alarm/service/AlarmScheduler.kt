@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import ee.ut.cs.alarm.data.Alarm
 import java.util.Calendar
 import java.util.UUID
@@ -13,9 +14,21 @@ class AlarmScheduler(
 ) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    fun canScheduleExactAlarms(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            alarmManager.canScheduleExactAlarms()
+        } else {
+            // For older versions, this permission is not needed, so we can consider it "granted"
+            true
+        }
+    }
     fun scheduleAlarm(alarm: Alarm) {
         if (!alarm.enabled) {
             cancelAlarm(alarm.id)
+            return
+        }
+
+        if (!canScheduleExactAlarms()) {
             return
         }
 
@@ -54,10 +67,12 @@ class AlarmScheduler(
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                     )
 
+
                 alarmManager.setAlarmClock(
                     AlarmManager.AlarmClockInfo(dayCalendar.timeInMillis, null),
                     pending,
                 )
+
 
                 // chat grpt
 //                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

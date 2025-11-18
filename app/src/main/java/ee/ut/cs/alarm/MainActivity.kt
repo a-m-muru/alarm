@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
 
         permissionManager = PermissionManager(this)
 
-        if (true) {
+        if (false) {
             val alarmIntent =
                 Intent(this, AlarmActivity::class.java).apply {
                     putExtra("ut.cs.alarm.alarm", Alarm(time = 48u))
