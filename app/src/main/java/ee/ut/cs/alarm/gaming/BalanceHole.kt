@@ -35,6 +35,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.rotationMatrix
 import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.math.sign
@@ -132,7 +133,7 @@ class GameEngine {
 
                     // Check if the ball is inside the hole
                     if (distance < (hole.radius - ball.radius)) {
-                        if (ball.vel.length() < 20000f) {
+                        if (ball.vel.length() < 200f) {
                             balls.remove(ball)
                             return
                         }
@@ -180,6 +181,11 @@ class Ball(
         // Log.i("ball", "delta: " + deltaT)
 
         //todo if z is negative, go crazy
+        if (engine.rotation.z < 0) {
+            vel.x = Random.nextFloat() * 10000f - 5000f
+            vel.y = Random.nextFloat() * 10000f - 5000f
+        }
+
 
 
         vel.x += engine.rotation.x * deltaT * ACC_MULT
