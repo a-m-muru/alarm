@@ -11,8 +11,11 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.core.app.NotificationCompat
+import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.R
+import ee.ut.cs.alarm.data.Alarm
 
 class AlarmForegroundService : Service() {
     var mediaPlayer: MediaPlayer? = null
@@ -43,17 +46,43 @@ class AlarmForegroundService : Service() {
         flags: Int,
         startId: Int,
     ): Int {
-        val intent: Intent =
+        if (intent != null && intent.action != null) {
+            if (intent.action.equals("STOP_ALARM")) {
+                stopSelf()
+                return START_NOT_STICKY
+            }
+        }
+
+        val alarm =
             (
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    intent?.getParcelableExtra("alarmIntent", Intent::class.java)
+                    intent?.getParcelableExtra("ut.cs.alarm.alarm", Alarm::class.java)
                 } else {
-                    intent?.getParcelableExtra<Intent>("alarmIntent")
+                    intent?.getParcelableExtra<Intent>("ut.cs.alarm.alarm")
                 }
             )!!
+        val minigameId = intent?.getIntExtra("ut.cs.alarm.minigameId", -999)
+
+        val alarmIntent = Intent(this, AlarmActivity::class.java)
+        alarmIntent
+            .putExtra("ut.cs.alarm.alarm", alarm)
+            .putExtra("ut.cs.alarm.minigameId", minigameId)
+
+        for (a in alarmIntent.extras?.keySet()!!) {
+            Log.d("ALARM FOREGROUND SERVICE", a)
+        }
+        Log.d(
+            "ALARM FOREGROUND SERVICE",
+            "minigame id should be " + alarmIntent.getIntExtra("ut.cs.alarm.minigameId", -3),
+        )
         sendNotification(
             this,
-            PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_IMMUTABLE),
+            PendingIntent.getActivity(
+                this,
+                1,
+                alarmIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            ),
         )
 
         mediaPlayer?.start()
@@ -62,14 +91,14 @@ class AlarmForegroundService : Service() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         stopAlarmSound()
+        super.onDestroy()
     }
 
     // thanx CHATGPT 💝💝💝💝💝💝💝
     fun sendNotification(
         ctx: Context,
-        intent: PendingIntent,
+        notifIntent: PendingIntent,
     ) {
         val channelID = "ALARM CHANNEL ALARM++ COOL CHANNEL"
         val channelName = "Alarm++ Notifications"
@@ -91,7 +120,7 @@ class AlarmForegroundService : Service() {
                 .setSmallIcon(R.drawable.ic_launcher_foreground)
                 .setContentTitle("WAKE nice UP!!!!!!!!!!")
                 .setContentText(":) pls wake up \uD83D\uDC9D \uD83D\uDC9D \uD83D\uDC9D")
-                .setContentIntent(intent)
+                .setContentIntent(notifIntent)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(false)
                 .setOngoing(true)

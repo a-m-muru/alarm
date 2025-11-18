@@ -44,12 +44,8 @@ class AlarmScheduler(
                     dayCalendar.add(Calendar.WEEK_OF_YEAR, 1)
                 }
 
-                val intent =
-                    Intent(
-                        context,
-                        AlarmReceiver::class.java,
-                    )
-                intent.putExtra("alarm", alarm)
+                val intent = Intent(context, AlarmReceiver::class.java)
+                intent.putExtra("ut.cs.alarm.alarm", alarm)
                 val pending =
                     PendingIntent.getBroadcast(
                         context,

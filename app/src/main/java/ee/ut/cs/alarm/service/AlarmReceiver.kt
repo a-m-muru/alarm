@@ -5,10 +5,13 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.Log
 import androidx.core.content.ContextCompat
 import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.data.Alarm
+import kotlin.random.Random
 
 class AlarmReceiver : BroadcastReceiver() {
     // my heartfelt gratitude to CHAT GEPT
@@ -16,7 +19,7 @@ class AlarmReceiver : BroadcastReceiver() {
         context: Context,
         intent: Intent,
     ) {
-        val alarm = intent.getParcelableExtra<Alarm>("alarm")
+        val alarm = intent.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
         if (alarm == null) {
             Log.e("ALARM RECEIVER", "alarm was null!! stopping anything")
             return
@@ -25,11 +28,24 @@ class AlarmReceiver : BroadcastReceiver() {
         Log.i("ALARM RECEIVER", "packing up and sending $alarm")
 
         val alarmIntent = Intent(context, AlarmActivity::class.java)
-        alarmIntent.putExtra("alarm", alarm)
+        alarmIntent.putExtra("ut.cs.alarm.alarm", alarm)
+        alarmIntent.putExtra(
+            "ut.cs.alarm.minigameId",
+            Random.nextInt(AlarmActivity.MAX_MINIGAMES),
+        )
+        Log.d(
+            "ALARM RECEIVER",
+            "set intent extra to " + alarmIntent.getIntExtra("ut.cs.alarm.minigameId", -2),
+        )
         alarmIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
 
         val serviceIntent = Intent(context, AlarmForegroundService::class.java)
-        serviceIntent.putExtra("alarmIntent", alarmIntent)
+//        serviceIntent.putExtra("ut.cs.alarm.alarmIntent", alarmIntent)
+        serviceIntent.putExtra("ut.cs.alarm.alarm", alarm)
+        serviceIntent.putExtra(
+            "ut.cs.alarm.minigameId",
+            Random.nextInt(AlarmActivity.MAX_MINIGAMES),
+        )
         ContextCompat.startForegroundService(context, serviceIntent)
 
         if (canStartActivity(context)) {
