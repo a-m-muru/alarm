@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.math.sign
 import kotlin.random.Random
@@ -55,7 +55,11 @@ class GameEngine {
         balls.clear()
 
         repeat(8) {
-            var ball = Ball(pos = Vec2(Random.nextFloat() * 30 + 50, Random.nextFloat() * 30 + 50), radius = Random.nextFloat() * 20 + 10f)
+            var ball =
+                Ball(
+                    pos = Vec2(Random.nextFloat() * 30 + 50, round(Random.nextFloat() * 5) * 20 + 50),
+                    radius = Random.nextFloat() * 20 + 10f,
+                )
             ball.vel = Vec2(Random.nextFloat() * 20f + -10f, Random.nextFloat() * 20f + -10f)
 
             balls.add(ball)
@@ -133,8 +137,10 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
     val density = LocalDensity.current
     val context = LocalContext.current
 
-    val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
+    val sensorManager =
+        remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     val orientation = remember { sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR) }
+    val grav = remember { sensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY) }
 
     var gyroscopeData by remember { mutableStateOf(Vec3(0f, 0f, 0f)) }
 
@@ -150,15 +156,20 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
 
                 override fun onSensorChanged(event: SensorEvent?) {
                     when (event?.sensor?.type) {
-                        Sensor.TYPE_ROTATION_VECTOR -> {
-                            gameEngine.rotation = Vec3(event.values[0], event.values[1], event.values[2])
+                        Sensor.TYPE_GRAVITY -> {
+                            gameEngine.rotation =
+                                Vec3(event.values[0], event.values[1], event.values[2])
                         }
                     }
                 }
             }
 
-        orientation?.let {
-            sensorManager.registerListener(sensorEventListener, it, SensorManager.SENSOR_DELAY_FASTEST)
+        grav?.let {
+            sensorManager.registerListener(
+                sensorEventListener,
+                it,
+                SensorManager.SENSOR_DELAY_FASTEST,
+            )
         }
 
         onDispose {

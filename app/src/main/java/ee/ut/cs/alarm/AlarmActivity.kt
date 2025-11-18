@@ -162,7 +162,7 @@ class AlarmActivity : ComponentActivity() {
         val navback = { finish() }
 
         // test
-        // BalanceHole(onNavigateBack = navback)
+        BalanceHole(onNavigateBack = navback)
         // SensorScreen(onNavigateBack = navback)
         return
         when (id) {
