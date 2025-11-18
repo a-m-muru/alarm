@@ -6,7 +6,9 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -305,10 +308,22 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
 
 
         if (gameEngine.balls.isEmpty()) {
-            Text(text = "Congratulations! You did it!", fontSize = 24.sp)
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(onClick = onNavigateBack) {
-                Text("Go Back")
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally, // Center items horizontally
+                    verticalArrangement = Arrangement.Center // Center items vertically within the column
+                ) {
+                    Text(text = "Congratulations! You did it!", fontSize = 24.sp)
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Button(onClick = onNavigateBack) {
+                        Text("Go Back")
+                    }
+                }
             }
         }
     }
