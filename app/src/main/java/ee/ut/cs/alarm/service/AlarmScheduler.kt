@@ -45,22 +45,38 @@ class AlarmScheduler(
                 }
 
                 val intent =
-                    Intent(context, AlarmReceiver::class.java)
-                        .apply {
-                            putExtra("alarm", alarm)
-                        }.let { intent ->
-                            PendingIntent.getBroadcast(
-                                context,
-                                alarm.id.hashCode() + i,
-                                intent,
-                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                            )
-                        }
+                    Intent(
+                        context,
+                        AlarmReceiver::class.java,
+                    )
+                intent.putExtra("alarm", alarm)
+                val pending =
+                    PendingIntent.getBroadcast(
+                        context,
+                        alarm.id.hashCode() + i,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                    )
 
                 alarmManager.setAlarmClock(
                     AlarmManager.AlarmClockInfo(dayCalendar.timeInMillis, null),
-                    intent,
+                    pending,
                 )
+
+                // chat grpt
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//                    alarmManager.setExactAndAllowWhileIdle(
+//                        AlarmManager.RTC_WAKEUP,
+//                        dayCalendar.timeInMillis,
+//                        pending,
+//                    )
+//                } else {
+//                    alarmManager.setExact(
+//                        AlarmManager.RTC_WAKEUP,
+//                        dayCalendar.timeInMillis,
+//                        pending,
+//                    )
+//                }
             }
 
             daysMask = daysMask shr 1
