@@ -161,8 +161,8 @@ class AlarmActivity : ComponentActivity() {
     fun MinigameScreen(id: Int) {
         val navback = { end() }
 
-        var id = id
-        id = 2 // debug
+        // var id = id
+        // id = 2 // debug
 
         when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
