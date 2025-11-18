@@ -99,8 +99,8 @@ class Ball(
         // Log.i("ball", "position: " + pos.x + " " + pos.y)
         // Log.i("ball", "delta: " + deltaT)
         pos.x += vel.x * deltaT
-        vel.x += engine.rotation.y * deltaT * 10f
-        vel.y += engine.rotation.x * deltaT * 10f
+        vel.x += engine.rotation.x * deltaT * 10f
+        vel.y += engine.rotation.y * deltaT * 10f
         if ((pos.x + radius).dp > engine.screenWidth) {
             pos.x = engine.screenWidth.value - radius
             vel.x *= -BOUNCE_ENERGY_MULT
@@ -158,7 +158,7 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
                     when (event?.sensor?.type) {
                         Sensor.TYPE_GRAVITY -> {
                             gameEngine.rotation =
-                                Vec3(event.values[0], event.values[1], event.values[2])
+                                Vec3(-event.values[0], event.values[1], event.values[2])
                         }
                     }
                 }
