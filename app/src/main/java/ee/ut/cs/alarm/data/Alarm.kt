@@ -18,7 +18,7 @@ object Day {
 data class Alarm(
     var id: UUID = UUID.randomUUID(),
     var time: UInt = 0u,
-    var days: Byte = 0x00b,
+    var days: Byte = 0.toByte(),
     var label: String? = null,
     val ringtoneUri: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
