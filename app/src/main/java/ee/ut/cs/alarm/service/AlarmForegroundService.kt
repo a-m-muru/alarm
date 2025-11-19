@@ -16,6 +16,9 @@ import androidx.core.app.NotificationCompat
 import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.data.Alarm
+import java.text.DateFormat
+import java.util.Calendar
+import kotlin.random.Random
 
 class AlarmForegroundService : Service() {
     var mediaPlayer: MediaPlayer? = null
@@ -53,14 +56,19 @@ class AlarmForegroundService : Service() {
             }
         }
 
-        val alarm =
+        val alarm: Alarm? =
             (
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     intent?.getParcelableExtra("ut.cs.alarm.alarm", Alarm::class.java)
                 } else {
-                    intent?.getParcelableExtra<Intent>("ut.cs.alarm.alarm")
+                    intent?.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
                 }
-            )!!
+            )
+        if (alarm == null) {
+            Log.e("ALARM FOREGROUND SERVICE", "alarm in parcel was null, stopping anything")
+            return START_NOT_STICKY
+        }
+
         val minigameId = intent?.getIntExtra("ut.cs.alarm.minigameId", -999)
 
         val alarmIntent = Intent(this, AlarmActivity::class.java)
@@ -83,6 +91,7 @@ class AlarmForegroundService : Service() {
                 alarmIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             ),
+            alarm!!,
         )
 
         mediaPlayer?.start()
@@ -99,6 +108,7 @@ class AlarmForegroundService : Service() {
     fun sendNotification(
         ctx: Context,
         notifIntent: PendingIntent,
+        alarm: Alarm,
     ) {
         val channelID = "ALARM CHANNEL ALARM++ COOL CHANNEL"
         val channelName = "Alarm++ Notifications"
@@ -113,13 +123,27 @@ class AlarmForegroundService : Service() {
                 notifManager.createNotificationChannel(channel)
             }
         }
+        val timeFmt = DateFormat.getTimeInstance(DateFormat.SHORT)
+        val cal = Calendar.getInstance()
+        cal.timeInMillis = alarm.time.toLong() * 1000
+        val titleTexts =
+            arrayOf(
+                "Rise and SHINE",
+                "Your BEAUTIFUL DAY Starts Here",
+                "Wake up Wake up Wake    Up",
+                "Hey, you. You're finally awake",
+                "Sleep no more ...  The world of the Awake awaits you",
+                "ALARM",
+                "WAKE UP",
+            )
+        val title = titleTexts[Random.nextInt(titleTexts.size)]
 
         val notifBuilder =
             NotificationCompat
                 .Builder(ctx, channelID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("WAKE nice UP!!!!!!!!!!")
-                .setContentText(":) pls wake up \uD83D\uDC9D \uD83D\uDC9D \uD83D\uDC9D")
+                .setSmallIcon(R.drawable.alarm_icon)
+                .setContentTitle(title)
+                .setContentText("Your ${timeFmt.format(cal.time)} alarm is here!\n${alarm.label}")
                 .setContentIntent(notifIntent)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(false)
