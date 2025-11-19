@@ -50,7 +50,7 @@ class AlarmScheduler(
             val pending =
                 PendingIntent.getBroadcast(
                     context,
-                    alarm.id.hashCode(),
+                    alarm.id.hashCode() + 0,
                     intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
                 )
@@ -117,7 +117,7 @@ class AlarmScheduler(
     }
 
     fun cancelAlarm(id: UUID) {
-        for (i in 1..7) {
+        for (i in 0..7) {
             val intent = Intent(context, AlarmReceiver::class.java)
             val pendingIntent =
                 PendingIntent.getBroadcast(
@@ -128,14 +128,5 @@ class AlarmScheduler(
                 )
             alarmManager.cancel(pendingIntent)
         }
-        val intent = Intent(context, AlarmReceiver::class.java)
-        val pendingIntent =
-            PendingIntent.getBroadcast(
-                context,
-                id.hashCode(),
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-        alarmManager.cancel(pendingIntent)
     }
 }
