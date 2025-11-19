@@ -125,7 +125,9 @@ class AlarmForegroundService : Service() {
         }
         val timeFmt = DateFormat.getTimeInstance(DateFormat.SHORT)
         val cal = Calendar.getInstance()
-        cal.timeInMillis = alarm.time.toLong() * 1000
+        val hour = alarm.time.toInt() / 3600
+        cal.set(Calendar.HOUR_OF_DAY, hour)
+        cal.set(Calendar.MINUTE, (alarm.time.toInt() / 60) % (hour * 60))
         val titleTexts =
             arrayOf(
                 "Rise and SHINE",
