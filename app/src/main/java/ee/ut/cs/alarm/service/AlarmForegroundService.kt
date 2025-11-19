@@ -91,7 +91,7 @@ class AlarmForegroundService : Service() {
                 alarmIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             ),
-            alarm!!,
+            alarm,
         )
 
         mediaPlayer?.start()
