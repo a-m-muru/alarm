@@ -35,10 +35,32 @@ class AlarmScheduler(
         val calendar = Calendar.getInstance()
         calendar.set(Calendar.HOUR_OF_DAY, (alarm.time / 3600u).toInt())
         calendar.set(Calendar.MINUTE, ((alarm.time / 60u) % 60u).toInt())
-        calendar.set(Calendar.SECOND, (alarm.time % 60u).toInt())
+        calendar.set(Calendar.SECOND, (alarm.time % 60u).toInt()) // ?? User can't set seconds for alarm
         calendar.set(Calendar.MILLISECOND, 0)
 
         var daysMask = alarm.days.toInt()
+        // if no days are set, schedule for today or tomorrow if time has already passed today
+        if (daysMask == 0) {
+            val dayCalendar = calendar.clone() as Calendar
+            if (dayCalendar.timeInMillis <= System.currentTimeMillis()) {
+                dayCalendar.add(Calendar.DAY_OF_WEEK, 1)
+            }
+            val intent = Intent(context, AlarmReceiver::class.java)
+            intent.putExtra("ut.cs.alarm.alarm", alarm)
+            val pending =
+                PendingIntent.getBroadcast(
+                    context,
+                    alarm.id.hashCode() + 0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+                )
+
+
+            alarmManager.setAlarmClock(
+                AlarmManager.AlarmClockInfo(dayCalendar.timeInMillis, null),
+                pending,
+            )
+        }
         for (i in 1..7) {
             if (daysMask and 1 > 0) {
                 val dayCalendar = calendar.clone() as Calendar
@@ -95,7 +117,7 @@ class AlarmScheduler(
     }
 
     fun cancelAlarm(id: UUID) {
-        for (i in 1..7) {
+        for (i in 0..7) {
             val intent = Intent(context, AlarmReceiver::class.java)
             val pendingIntent =
                 PendingIntent.getBroadcast(
