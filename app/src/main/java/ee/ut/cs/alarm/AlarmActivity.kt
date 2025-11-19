@@ -3,6 +3,7 @@ package ee.ut.cs.alarm
 import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -36,6 +37,7 @@ import ee.ut.cs.alarm.data.Weather
 import ee.ut.cs.alarm.gaming.BalanceHole
 import ee.ut.cs.alarm.gaming.GoIntoTheLight
 import ee.ut.cs.alarm.gaming.JumpingJacks
+import ee.ut.cs.alarm.service.AlarmForegroundService
 import ee.ut.cs.alarm.ui.theme.AlarmTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,10 +45,11 @@ import kotlinx.coroutines.withContext
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import kotlin.random.Random
 
 class AlarmActivity : ComponentActivity() {
-    var minigameId: Int = 0
+    companion object {
+        const val MAX_MINIGAMES = 3
+    }
 
     // this disables switching active apps
     override fun onPause() {
@@ -61,32 +64,29 @@ class AlarmActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d("AlarmActivity", "creating alarm instance")
-
-        minigameId = Random.nextInt(2)
+        Log.d("ALARM ACTIVITY", "creating alarm activity instance")
+        Log.d("ALARM ACTIVITY", intent.toString())
+        val alarm = intent.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
+        val gameId = intent.getIntExtra("ut.cs.alarm.minigameId", -1)
+        for (a in intent.extras?.keySet()!!) Log.d("ALARM ACTIVITY", "gthere is exta " + a)
+        Log.d("ALARM ACTIVITY", "got minigame id " + gameId)
+        Log.i("ALARM ACTIVITY", "" + alarm)
 
         enableEdgeToEdge()
         setContent {
             AlarmTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AlarmScreen(this, Modifier.padding(innerPadding))
+                    AlarmScreen(this, Modifier.padding(innerPadding), gameId)
                 }
             }
         }
     }
 
-    // looks jank and not compose-y but works!?
-    override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt("minigameId", minigameId)
-        Log.d("AlarmActivity", "saving alarm screen state")
-
-        super.onSaveInstanceState(outState)
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        Log.d("AlarmActivity", "restoring alarm screen state")
-        minigameId = savedInstanceState.getInt("minigameId")
+    fun end() {
+        val serviceIntent: Intent = Intent(this, AlarmForegroundService::class.java)
+        serviceIntent.setAction("STOP_ALARM") // Set the action to stop the alarm
+        stopService(serviceIntent) // Stop the service
+        finish()
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -94,6 +94,7 @@ class AlarmActivity : ComponentActivity() {
     fun AlarmScreen(
         ctx: Context,
         modifier: Modifier,
+        gameId: Int,
     ) {
 //        Text("asdasdasd")
 //        GameLoob(this)
@@ -102,8 +103,7 @@ class AlarmActivity : ComponentActivity() {
 //        ) {
 //            Text("yeyeyayhs")
 //        }
-        val alarm = intent.getParcelableExtra<Alarm>("alarm") as Alarm
-        Log.i("ALARM SCREEN", "" + alarm)
+
         val cal = Calendar.getInstance()
         val timeFmt = DateFormat.getTimeInstance(DateFormat.SHORT)
         val dateFmt = SimpleDateFormat("EEEE dd MMMM")
@@ -152,23 +152,23 @@ class AlarmActivity : ComponentActivity() {
                         ),
                 verticalArrangement = Arrangement.Center,
             ) {
-                MinigameScreen(minigameId)
+                MinigameScreen(gameId)
             }
         }
     }
 
     @Composable
     fun MinigameScreen(id: Int) {
-        val navback = { finish() }
+        val navback = { end() }
 
-        // test
-        // BalanceHole(onNavigateBack = navback)
-        // SensorScreen(onNavigateBack = navback)
-        return
+        // var id = id
+        // id = 2 // debug
+
         when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
             1 -> GoIntoTheLight(onNavigateBack = navback)
             2 -> BalanceHole(onNavigateBack = navback)
+            else -> throw IllegalArgumentException("no minigame with id " + id)
         }
     }
 }

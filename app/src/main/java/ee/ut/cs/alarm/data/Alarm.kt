@@ -18,7 +18,7 @@ object Day {
 data class Alarm(
     var id: UUID = UUID.randomUUID(),
     var time: UInt = 0u,
-    var days: Byte = 0x00b,
+    var days: Byte = 0.toByte(),
     var label: String? = null,
     val ringtoneUri: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
@@ -68,7 +68,7 @@ data class Alarm(
         dest.writeString(label)
         dest.writeString(ringtoneUri)
         dest.writeLong(createdAt)
-        dest.writeByte(if (enabled)  0x01b else 0x00)
+        dest.writeByte(if (enabled) 0x01.toByte() else 0x00)
     }
 
     fun toProto(): AlarmProto {

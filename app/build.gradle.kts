@@ -31,6 +31,12 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("test") {
+            java.srcDirs("src/test/java")
+        }
+    }
+
     defaultConfig {
         applicationId = "ee.ut.cs.alarm"
         minSdk = 24
@@ -78,6 +84,8 @@ dependencies {
     implementation(libs.protobuf.javalite)
     implementation(libs.androidx.navigation.compose)
     testImplementation(libs.junit)
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.11.1")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

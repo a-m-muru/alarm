@@ -20,10 +20,10 @@ class MainActivity : ComponentActivity() {
 
         permissionManager = PermissionManager(this)
 
-        if (false) {
+        if (false) { // debug
             val alarmIntent =
                 Intent(this, AlarmActivity::class.java).apply {
-                    putExtra("alarm", Alarm(time = 48u))
+                    putExtra("ut.cs.alarm.alarm", Alarm(time = 48u))
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
 
