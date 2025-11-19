@@ -152,8 +152,8 @@ class GameEngine {
                 for (hole in holes.toList()) {
                     val distance = ball.pos.distanceTo(hole.pos)
 
-                    // Check if the ball is inside the hole
-                    if (distance < ball.radius && hole.radius > ball.radius) {
+                    // Check if the ball is gonna fall inside the hole
+                    if (distance < hole.radius && hole.radius > ball.radius) {
                         if (ball.vel.length() < 100f) {
                             balls.remove(ball)
                             if (holeSound.isPlaying) {
