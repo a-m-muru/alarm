@@ -107,7 +107,16 @@ fun AlarmListScreen(
                     ) { alarm ->
                         AlarmCard(
                             alarm = alarm,
-                            onToggleEnabled = {enabled -> vm.updateItem(alarm.copy(enabled=enabled))},
+                            cardToggled = {
+                                enabled ->
+                                    val al = alarm.copy(enabled=enabled)
+                                    vm.updateItem(al)
+                                    if (enabled) {
+                                        alarmScheduler.scheduleAlarm(al)
+                                    } else {
+                                        alarmScheduler.cancelAlarm(alarm.id)
+                                    }
+                            },
                             onDelete = {
                                 vm.removeAlarm(alarm)
                             },

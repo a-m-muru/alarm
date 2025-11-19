@@ -33,7 +33,7 @@ import kotlin.experimental.and
 @Composable
 fun AlarmCard(
     alarm: Alarm,
-    onToggleEnabled: (Boolean) -> Unit,
+    cardToggled: (Boolean) -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
@@ -116,7 +116,7 @@ fun AlarmCard(
 
             Switch(
                 checked = alarm.enabled,
-                onCheckedChange = onToggleEnabled
+                onCheckedChange = cardToggled
             )
         }
     }
