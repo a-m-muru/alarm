@@ -1,6 +1,7 @@
 ## Testing Strategy
 
-// TODO
+AndroidTests focus on ui flow in AlarmListScreenTest using in-memory repository/scheduler helpers for dialogs, state changes, and rendered views. Tests open the real UI, interact through semantics hooks or text/content descriptions, and waits to give system time to catch up.
+Unit tests cover basic data logic for alarm data by asserting that data remains the same after applying functions.
 
 ## Build Process for APK
 
