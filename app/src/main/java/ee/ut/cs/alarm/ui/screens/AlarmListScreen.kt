@@ -131,9 +131,9 @@ fun AlarmListScreen(
 
             if (showDialog) {
                 EditAlarmDialog(
-                    editableAlarm,
-                    {showDialog = false},
-                    { alarmToSave ->
+                    alarm = editableAlarm,
+                    onDismissRequest = { showDialog = false },
+                    onSaveRequest = { alarmToSave ->
                         if (vm.hasAlarm(alarmToSave)) {
                             alarmScheduler.cancelAlarm(alarmToSave.id)
                             vm.updateItem(alarmToSave)
@@ -142,7 +142,8 @@ fun AlarmListScreen(
                         }
                         alarmScheduler.scheduleAlarm(alarmToSave)
                         showDialog = false
-                    }
+                    },
+                    alarmScheduler = alarmScheduler
                 )
             }
         }

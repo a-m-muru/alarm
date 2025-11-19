@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
+import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -37,6 +38,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,20 +51,29 @@ import androidx.compose.ui.window.DialogProperties
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Day
 import ee.ut.cs.alarm.service.AlarmScheduler
+import kotlinx.coroutines.launch
 import kotlin.experimental.and
 import kotlin.experimental.xor
-import android.provider.Settings
-import kotlinx.coroutines.launch
+
+object EditAlarmDialogTestTags {
+    const val TIME_PICKER = "timePicker"
+}
+
+val SetTimeSemanticsKey = SemanticsPropertyKey<(Int, Int) -> Boolean>("SetTimeAction")
+var SemanticsPropertyReceiver.setTimeAction by SetTimeSemanticsKey
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 fun EditAlarmDialog(
     alarm: Alarm,
     onDismissRequest: () -> Unit,
-    onSaveRequest: (Alarm) -> Unit
+    onSaveRequest: (Alarm) -> Unit,
+    alarmScheduler: AlarmScheduler? = null
 ) {
     val context = LocalContext.current
-    val alarmScheduler = remember { AlarmScheduler(context) }
+    val scheduler = remember(alarmScheduler, context) {
+        alarmScheduler ?: AlarmScheduler(context)
+    }
     val scope = rememberCoroutineScope()
 
     val openSettingsLauncher = rememberLauncherForActivityResult(
@@ -125,7 +139,18 @@ fun EditAlarmDialog(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    TimePicker(state = timePickerState)
+                    TimePicker(
+                        state = timePickerState,
+                        modifier = Modifier
+                            .testTag(EditAlarmDialogTestTags.TIME_PICKER)
+                            .semantics {
+                                setTimeAction = { hour, minute ->
+                                    timePickerState.hour = hour
+                                    timePickerState.minute = minute
+                                    true
+                                }
+                            }
+                    )
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -175,7 +200,7 @@ fun EditAlarmDialog(
                                     days = selectedDays
                                 )
 
-                                if (alarmScheduler.canScheduleExactAlarms()) {
+                                if (scheduler.canScheduleExactAlarms()) {
                                     // Permission is granted, proceed with saving.
                                     onSaveRequest(newAlarm)
                                 } else {

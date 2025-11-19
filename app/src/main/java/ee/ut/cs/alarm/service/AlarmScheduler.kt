@@ -9,12 +9,12 @@ import ee.ut.cs.alarm.data.Alarm
 import java.util.Calendar
 import java.util.UUID
 
-class AlarmScheduler(
+open class AlarmScheduler(
     private val context: Context,
 ) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    fun canScheduleExactAlarms(): Boolean {
+    open fun canScheduleExactAlarms(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             alarmManager.canScheduleExactAlarms()
         } else {
@@ -22,7 +22,7 @@ class AlarmScheduler(
             true
         }
     }
-    fun scheduleAlarm(alarm: Alarm) {
+    open fun scheduleAlarm(alarm: Alarm) {
         if (!alarm.enabled) {
             cancelAlarm(alarm.id)
             return
@@ -116,7 +116,7 @@ class AlarmScheduler(
         }
     }
 
-    fun cancelAlarm(id: UUID) {
+    open fun cancelAlarm(id: UUID) {
         for (i in 0..7) {
             val intent = Intent(context, AlarmReceiver::class.java)
             val pendingIntent =
