@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -49,6 +50,11 @@ import java.util.Calendar
 class AlarmActivity : ComponentActivity() {
     companion object {
         const val MAX_MINIGAMES = 3
+    }
+
+    private fun isDarkModeOn(): Boolean {
+        val currentNightMode = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        return currentNightMode == Configuration.UI_MODE_NIGHT_YES
     }
 
     // this disables switching active apps
@@ -134,6 +140,18 @@ class AlarmActivity : ComponentActivity() {
             Text(dateString, fontSize = 16.sp)
             Text(weatherText, fontSize = 12.sp)
             Spacer(modifier = Modifier.height(16.dp))
+            val colorList =
+                if (isDarkModeOn()) {
+                    listOf(
+                        Color.Magenta,
+                        Color.Blue,
+                        Color.Black,
+                        Color.Blue,
+                        Color.Magenta,
+                    )
+                } else {
+                    listOf(Color.White, Color.Yellow, Color.White, Color.Magenta, Color.White)
+                }
             Column(
                 modifier =
                     Modifier
@@ -141,13 +159,7 @@ class AlarmActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(
                             Brush.sweepGradient(
-                                listOf(
-                                    Color.Magenta,
-                                    Color.Blue,
-                                    Color.Black,
-                                    Color.Blue,
-                                    Color.Magenta,
-                                ),
+                                colorList,
                             ),
                         ),
                 verticalArrangement = Arrangement.Center,
