@@ -118,6 +118,7 @@ fun AlarmListScreen(
                                     }
                             },
                             onDelete = {
+                                alarmScheduler.cancelAlarm(alarm.id)
                                 vm.removeAlarm(alarm)
                             },
                             onEdit = {
