@@ -92,7 +92,7 @@ class GameEngine {
                     radius = Random.nextFloat() * 20 + 10f,
                     rotation = 0f,
                 )
-            ball.vel = Vec2(Random.nextFloat() * 20f + -10f, Random.nextFloat() * 20f + -10f)
+            ball.vel = Vec2((Random.nextFloat()-0.5f) * 2000f, (Random.nextFloat()-0.5f) * 2000f)
 
             balls.add(ball)
         }
