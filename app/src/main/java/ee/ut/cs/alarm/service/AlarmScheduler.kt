@@ -14,7 +14,25 @@ open class AlarmScheduler(
 ) {
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
-    open fun canScheduleExactAlarms(): Boolean {
+    /**
+     * @param day The day of the week to convert. Starts from Monday (1)
+     * @return The converted day of the week.
+     */
+    open fun intToCalendarDay(day: Int): Int {
+        // Calendar starts counting days from SUNDAY (1) and ends with SATURDAY (7).
+        return day % 7 + 1
+    }
+
+    /**
+     * @param day The day of the week to convert. Starts from Sunday (1)
+     * @return The converted day of the week.
+     */
+    open fun calendarDayToInt(day: Int): Int {
+        // Calendar starts counting days from SUNDAY (1) and ends with SATURDAY (7).
+        return (day + 5) % 7 + 1
+    }
+
+    fun canScheduleExactAlarms(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             alarmManager.canScheduleExactAlarms()
         } else {
@@ -22,7 +40,7 @@ open class AlarmScheduler(
             true
         }
     }
-    open fun scheduleAlarm(alarm: Alarm) {
+    fun scheduleAlarm(alarm: Alarm) {
         if (!alarm.enabled) {
             cancelAlarm(alarm.id)
             return
@@ -38,95 +56,55 @@ open class AlarmScheduler(
         calendar.set(Calendar.SECOND, (alarm.time % 60u).toInt()) // ?? User can't set seconds for alarm
         calendar.set(Calendar.MILLISECOND, 0)
 
-        var daysMask = alarm.days.toInt()
+        if (calendar.timeInMillis <= System.currentTimeMillis())
+            calendar.add(Calendar.DAY_OF_WEEK, 1)
+
+        val daysMask = alarm.days.toInt()
+
         // if no days are set, schedule for today or tomorrow if time has already passed today
         if (daysMask == 0) {
-            val dayCalendar = calendar.clone() as Calendar
-            if (dayCalendar.timeInMillis <= System.currentTimeMillis()) {
-                dayCalendar.add(Calendar.DAY_OF_WEEK, 1)
-            }
-            val intent = Intent(context, AlarmReceiver::class.java)
-            intent.putExtra("ut.cs.alarm.alarm", alarm)
-            val pending =
-                PendingIntent.getBroadcast(
-                    context,
-                    alarm.id.hashCode() + 0,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                )
-
-
-            alarmManager.setAlarmClock(
-                AlarmManager.AlarmClockInfo(dayCalendar.timeInMillis, null),
-                pending,
-            )
+            setAlarm(calendar, alarm)
+            return
         }
+
+        // Set repeating alarm
+        val day = calendarDayToInt(calendar.get(Calendar.DAY_OF_WEEK)) - 2
+        // Find the first time the alarm needs to ring
         for (i in 1..7) {
-            if (daysMask and 1 > 0) {
-                val dayCalendar = calendar.clone() as Calendar
-                when (i) {
-                    1 -> dayCalendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-                    2 -> dayCalendar.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY)
-                    3 -> dayCalendar.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY)
-                    4 -> dayCalendar.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY)
-                    5 -> dayCalendar.set(Calendar.DAY_OF_WEEK, Calendar.FRIDAY)
-                    6 -> dayCalendar.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY)
-                    7 -> dayCalendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
-                }
-
-                // If the time has already passed today, schedule for next week
-                if (dayCalendar.timeInMillis <= System.currentTimeMillis()) {
-                    dayCalendar.add(Calendar.WEEK_OF_YEAR, 1)
-                }
-
-                val intent = Intent(context, AlarmReceiver::class.java)
-                intent.putExtra("ut.cs.alarm.alarm", alarm)
-                val pending =
-                    PendingIntent.getBroadcast(
-                        context,
-                        alarm.id.hashCode() + i,
-                        intent,
-                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                    )
-
-
-                alarmManager.setAlarmClock(
-                    AlarmManager.AlarmClockInfo(dayCalendar.timeInMillis, null),
-                    pending,
-                )
-
-
-                // chat grpt
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//                    alarmManager.setExactAndAllowWhileIdle(
-//                        AlarmManager.RTC_WAKEUP,
-//                        dayCalendar.timeInMillis,
-//                        pending,
-//                    )
-//                } else {
-//                    alarmManager.setExact(
-//                        AlarmManager.RTC_WAKEUP,
-//                        dayCalendar.timeInMillis,
-//                        pending,
-//                    )
-//                }
+            if (daysMask and (1 shl ((i + day) % 7)) > 0) {
+                setAlarm(calendar, alarm)
+                break
             }
-
-            daysMask = daysMask shr 1
+            calendar.add(Calendar.DAY_OF_WEEK, 1)
         }
     }
 
-    open fun cancelAlarm(id: UUID) {
-        for (i in 0..7) {
-            val intent = Intent(context, AlarmReceiver::class.java)
-            val pendingIntent =
-                PendingIntent.getBroadcast(
-                    context,
-                    id.hashCode() + i,
-                    intent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-                )
-            alarmManager.cancel(pendingIntent)
-        }
+    fun setAlarm(time: Calendar, alarm: Alarm) {
+        val intent = Intent(context, AlarmReceiver::class.java)
+        intent.putExtra("ut.cs.alarm.alarm", alarm)
+        val pending =
+            PendingIntent.getBroadcast(
+                context,
+                alarm.id.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+
+        alarmManager.setAlarmClock(
+            AlarmManager.AlarmClockInfo(time.timeInMillis, null),
+            pending,
+        )
+    }
+
+    fun cancelAlarm(id: UUID) {
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                id.hashCode(),
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+            )
+        alarmManager.cancel(pendingIntent)
     }
 }

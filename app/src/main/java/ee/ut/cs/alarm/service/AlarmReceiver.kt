@@ -5,8 +5,7 @@ import android.app.ActivityManager.RunningAppProcessInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Parcel
-import android.os.Parcelable
+import android.os.Build
 import android.util.Log
 import androidx.core.content.ContextCompat
 import ee.ut.cs.alarm.AlarmActivity
@@ -19,13 +18,24 @@ class AlarmReceiver : BroadcastReceiver() {
         context: Context,
         intent: Intent,
     ) {
-        val alarm = intent.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
+        val alarm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("ut.cs.alarm.alarm", Alarm::class.java)
+        } else {
+            intent.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
+        }
         if (alarm == null) {
             Log.e("ALARM RECEIVER", "alarm was null!! stopping anything")
             return
         }
 
         Log.i("ALARM RECEIVER", "packing up and sending $alarm")
+
+        // Schedule the next alarm
+        if (alarm.days > 0) {
+            val alarmScheduler = AlarmScheduler(context)
+            alarmScheduler.scheduleAlarm(alarm)
+        }
+
 
         val alarmIntent = Intent(context, AlarmActivity::class.java)
         alarmIntent.putExtra("ut.cs.alarm.alarm", alarm)

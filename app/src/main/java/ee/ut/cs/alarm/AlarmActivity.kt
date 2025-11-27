@@ -5,6 +5,7 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -72,7 +73,11 @@ class AlarmActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Log.d("ALARM ACTIVITY", "creating alarm activity instance")
         Log.d("ALARM ACTIVITY", intent.toString())
-        val alarm = intent.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
+        val alarm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("ut.cs.alarm.alarm", Alarm::class.java)
+        } else {
+            intent.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
+        }
         val gameId = intent.getIntExtra("ut.cs.alarm.minigameId", -1)
         for (a in intent.extras?.keySet()!!) Log.d("ALARM ACTIVITY", "gthere is exta " + a)
         Log.d("ALARM ACTIVITY", "got minigame id " + gameId)
@@ -89,7 +94,7 @@ class AlarmActivity : ComponentActivity() {
     }
 
     fun end() {
-        val serviceIntent: Intent = Intent(this, AlarmForegroundService::class.java)
+        val serviceIntent = Intent(this, AlarmForegroundService::class.java)
         serviceIntent.setAction("STOP_ALARM") // Set the action to stop the alarm
         stopService(serviceIntent) // Stop the service
         finish()
