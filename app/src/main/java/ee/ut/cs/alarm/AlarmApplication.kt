@@ -1,13 +1,18 @@
 package ee.ut.cs.alarm
 
 import android.app.Application
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.os.Build
+import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.repo.AlarmRepository
 import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
 
 class AlarmApplication : Application() {
+    companion object {
+        // this is a valid object while the alarm foreground service is running
+        // its nulled when the alarm is stopped
+        var singletonAlarm: Alarm? = null
+        var singletonMinigameId: Int? = null // similar story with this
+    }
+
     lateinit var repo: AlarmRepository
         private set
 

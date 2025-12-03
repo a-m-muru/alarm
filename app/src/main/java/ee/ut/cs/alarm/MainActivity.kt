@@ -2,6 +2,7 @@ package ee.ut.cs.alarm
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -23,11 +24,24 @@ class MainActivity : ComponentActivity() {
         if (false) { // debug
             val alarmIntent =
                 Intent(this, AlarmActivity::class.java).apply {
-                    putExtra("ut.cs.alarm.alarm", Alarm(time = 48u))
+                    putExtra(ALARM_INTENT_EXTRA_ALARM, Alarm(time = 48u))
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
-
             startActivity(alarmIntent)
+            finish()
+        }
+
+        Log.d("MAINACTIVITY", "singleton alarm is " + AlarmApplication.singletonAlarm)
+        if (AlarmApplication.singletonAlarm != null) {
+            val alarmIntent =
+                Intent(this, AlarmActivity::class.java).apply {
+                    putExtra(ALARM_INTENT_EXTRA_ALARM, AlarmApplication.singletonAlarm)
+                    putExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, AlarmApplication.singletonMinigameId)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+            startActivity(alarmIntent)
+            finish()
+            return
         }
 
         enableEdgeToEdge()

@@ -13,7 +13,11 @@ import android.os.Build
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import ee.ut.cs.alarm.ACTION_STOP_ALARM
+import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_ALARM
+import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_MINIGAME_ID
 import ee.ut.cs.alarm.AlarmActivity
+import ee.ut.cs.alarm.AlarmApplication
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.data.Alarm
 import java.text.DateFormat
@@ -50,7 +54,7 @@ class AlarmForegroundService : Service() {
         startId: Int,
     ): Int {
         if (intent != null && intent.action != null) {
-            if (intent.action.equals("STOP_ALARM")) {
+            if (intent.action.equals(ACTION_STOP_ALARM)) {
                 stopSelf()
                 return START_NOT_STICKY
             }
@@ -59,9 +63,9 @@ class AlarmForegroundService : Service() {
         val alarm: Alarm? =
             (
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    intent?.getParcelableExtra("ut.cs.alarm.alarm", Alarm::class.java)
+                    intent?.getParcelableExtra(ALARM_INTENT_EXTRA_ALARM, Alarm::class.java)
                 } else {
-                    intent?.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
+                    intent?.getParcelableExtra<Alarm>(ALARM_INTENT_EXTRA_ALARM)
                 }
             )
         if (alarm == null) {
@@ -69,19 +73,25 @@ class AlarmForegroundService : Service() {
             return START_NOT_STICKY
         }
 
-        val minigameId = intent?.getIntExtra("ut.cs.alarm.minigameId", -999)
+        val minigameId = intent?.getIntExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, -999)
 
         val alarmIntent = Intent(this, AlarmActivity::class.java)
         alarmIntent
-            .putExtra("ut.cs.alarm.alarm", alarm)
-            .putExtra("ut.cs.alarm.minigameId", minigameId)
+            .putExtra(ALARM_INTENT_EXTRA_ALARM, alarm)
+            .putExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, minigameId)
 
         for (a in alarmIntent.extras?.keySet()!!) {
             Log.d("ALARM FOREGROUND SERVICE", a)
         }
         Log.d(
             "ALARM FOREGROUND SERVICE",
-            "minigame id should be " + alarmIntent.getIntExtra("ut.cs.alarm.minigameId", -3),
+            "minigame id should be " + alarmIntent.getIntExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, -3),
+        )
+        AlarmApplication.singletonAlarm = alarm
+        AlarmApplication.singletonMinigameId = minigameId
+        Log.d(
+            "ALARM FOREGROUND SERVICE",
+            "singleton alarm should be " + AlarmApplication.singletonAlarm,
         )
         sendNotification(
             this,
