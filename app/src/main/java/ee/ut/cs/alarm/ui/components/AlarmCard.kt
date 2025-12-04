@@ -1,6 +1,7 @@
 package ee.ut.cs.alarm.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxDefaults
@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.data.Alarm
-import ee.ut.cs.alarm.data.Day
+import ee.ut.cs.alarm.data.Days
 import kotlin.experimental.and
 
 @Composable
@@ -39,20 +39,10 @@ fun AlarmCard(
 ) {
     val timeString = String.format("%02d:%02d", (alarm.time / 3600u).toInt(), ((alarm.time / 60u) % 60u).toInt())
     val days: MutableList<String> = mutableListOf()
-    if (alarm.days and Day.MONDAY != 0.toByte())
-        days.add("Mon")
-    if (alarm.days and Day.TUESDAY != 0.toByte())
-        days.add("Tue")
-    if (alarm.days and Day.WEDNESDAY != 0.toByte())
-        days.add("Wed")
-    if (alarm.days and Day.THURSDAY != 0.toByte())
-        days.add("Thu")
-    if (alarm.days and Day.FRIDAY != 0.toByte())
-        days.add("Fri")
-    if (alarm.days and Day.SATURDAY != 0.toByte())
-        days.add("Sat")
-    if (alarm.days and Day.SUNDAY != 0.toByte())
-        days.add("Sun")
+    val ZERO = 0.toByte()
+    for (day in Days.keys)
+        if (alarm.days and day != ZERO)
+            days.add(Days[day]!!)
     val dayString = days.joinToString()
 
     val swipeToDismissBoxState = SwipeToDismissBoxState(
@@ -60,12 +50,9 @@ fun AlarmCard(
         density = LocalDensity.current,
         positionalThreshold = SwipeToDismissBoxDefaults.positionalThreshold,
         confirmValueChange = {
-            if (it == SwipeToDismissBoxValue.StartToEnd)
-                onEdit()
-            else if (it == SwipeToDismissBoxValue.EndToStart)
+            if (it != SwipeToDismissBoxValue.Settled)
                 onDelete()
-
-            it != SwipeToDismissBoxValue.StartToEnd
+            true
         }
     )
 
@@ -76,11 +63,11 @@ fun AlarmCard(
             when (swipeToDismissBoxState.dismissDirection) {
                 SwipeToDismissBoxValue.StartToEnd -> {
                     Icon(
-                        Icons.Default.Edit,
-                        contentDescription = "Edit alarm",
+                        Icons.Default.Delete,
+                        contentDescription = "Delete alarm",
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Green)
+                            .background(Color.Red)
                             .wrapContentSize(Alignment.CenterStart)
                             .padding(12.dp),
                         tint = Color.White
@@ -105,6 +92,7 @@ fun AlarmCard(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable { onEdit() }
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
