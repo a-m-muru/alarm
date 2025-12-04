@@ -15,6 +15,15 @@ object Day {
     const val SUNDAY: Byte = 0x40
 }
 
+val Days: Map<Byte, String> = mapOf(
+    Day.MONDAY to "Mon",
+    Day.TUESDAY to "Tue",
+    Day.WEDNESDAY to "Wed",
+    Day.THURSDAY to "Thu",
+    Day.FRIDAY to "Fri",
+    Day.SATURDAY to "Sat",
+    Day.SUNDAY to "Sun")
+
 data class Alarm(
     var id: UUID = UUID.randomUUID(),
     var time: UInt = 0u,
@@ -29,7 +38,7 @@ data class Alarm(
     }
 
     companion object CREATOR: Parcelable.Creator<Alarm?> {
-        override fun createFromParcel(source: Parcel?): Alarm? {
+        override fun createFromParcel(source: Parcel?): Alarm {
             if (source != null) {
                 val id = UUID.fromString(source.readString())
                 val time = source.readInt().toUInt()
@@ -44,7 +53,7 @@ data class Alarm(
             return Alarm()
         }
 
-        override fun newArray(size: Int): Array<out Alarm?>? {
+        override fun newArray(size: Int): Array<out Alarm?> {
             return Array<Alarm?>(size){ null }
         }
 

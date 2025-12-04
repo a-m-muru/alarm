@@ -109,7 +109,7 @@ fun AlarmListScreen(
                             alarm = alarm,
                             cardToggled = {
                                 enabled ->
-                                    val al = alarm.copy(enabled=enabled)
+                                    val al = alarm.copy(enabled=enabled) // ??? Is creating a copy needed
                                     vm.updateItem(al)
                                     if (enabled) {
                                         alarmScheduler.scheduleAlarm(al)
