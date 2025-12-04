@@ -91,7 +91,7 @@ class AlarmActivity : ComponentActivity() {
         setContent {
             AlarmTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AlarmScreen(this, Modifier.padding(innerPadding), gameId)
+                    AlarmScreen(Modifier.padding(innerPadding), gameId)
                 }
             }
         }
@@ -109,7 +109,6 @@ class AlarmActivity : ComponentActivity() {
     @SuppressLint("SimpleDateFormat")
     @Composable
     fun AlarmScreen(
-        ctx: Context,
         modifier: Modifier,
         gameId: Int,
     ) {

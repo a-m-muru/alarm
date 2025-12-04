@@ -49,7 +49,7 @@ class AlarmForegroundService : Service() {
         )
         mediaPlayer?.isLooping = true
 
-        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
+        vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator?
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -112,7 +112,7 @@ class AlarmForegroundService : Service() {
             alarm,
         )
 
-        playAlarmSound(this)
+        playAlarmSound()
 
         return START_STICKY
     }
@@ -174,7 +174,7 @@ class AlarmForegroundService : Service() {
         startForeground(1, notifBuilder.build())
     }
 
-    private fun playAlarmSound(ctx: Context) {
+    private fun playAlarmSound() {
         mediaPlayer?.start() // Start playback
         if (vibrator?.hasVibrator() == true) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
