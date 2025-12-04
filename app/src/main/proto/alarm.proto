@@ -9,7 +9,7 @@ message AlarmProto {
   uint32 days = 3;
   string label = 4;
   string ringtone_uri = 5;
-  int64 created_at = 6;
+  int64 created_at = 6; // Doesn't seem necessary
   bool enabled = 7;
 }
 

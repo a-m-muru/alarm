@@ -1,5 +1,6 @@
 package ee.ut.cs.alarm.ui.screens
 
+import java.time.LocalTime
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -79,7 +80,7 @@ fun AlarmListScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    editableAlarm = Alarm()
+                    editableAlarm = Alarm(time = LocalTime.now().toSecondOfDay().toUInt() + 60u)
                     showDialog = true
                 }
             ) {

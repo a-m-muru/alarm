@@ -1,9 +1,9 @@
 package ee.ut.cs.alarm.ui.components
 
 import android.content.Intent
+import android.widget.TimePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,9 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,17 +35,17 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.semantics.SemanticsPropertyKey
-import androidx.compose.ui.semantics.SemanticsPropertyReceiver
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Day
 import ee.ut.cs.alarm.service.AlarmScheduler
@@ -58,9 +56,6 @@ import kotlin.experimental.xor
 object EditAlarmDialogTestTags {
     const val TIME_PICKER = "timePicker"
 }
-
-val SetTimeSemanticsKey = SemanticsPropertyKey<(Int, Int) -> Boolean>("SetTimeAction")
-var SemanticsPropertyReceiver.setTimeAction by SetTimeSemanticsKey
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -85,11 +80,8 @@ fun EditAlarmDialog(
         // For simplicity, we can ask the user to click "Save" again.
     }
 
-    val timePickerState = rememberTimePickerState(
-        initialHour = (alarm.time / 3600u).toInt(),
-        initialMinute = ((alarm.time / 60u) % 60u).toInt(),
-        is24Hour = true
-    )
+    var hour by remember { mutableStateOf((alarm.time / 3600u).toInt()) }
+    var minute by remember { mutableStateOf(((alarm.time / 60u) % 60u).toInt()) }
 
     val days = listOf(
         Pair("Mon", Day.MONDAY),
@@ -139,17 +131,24 @@ fun EditAlarmDialog(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    TimePicker(
-                        state = timePickerState,
-                        modifier = Modifier
-                            .testTag(EditAlarmDialogTestTags.TIME_PICKER)
-                            .semantics {
-                                setTimeAction = { hour, minute ->
-                                    timePickerState.hour = hour
-                                    timePickerState.minute = minute
-                                    true
+                    AndroidView(
+                        factory = { ctx ->
+                            (android.view.LayoutInflater.from(ctx)
+                                .inflate(R.layout.spinner_time_picker, null, false) as TimePicker).apply {
+                                setIs24HourView(true) // Should be changeable in settings
+                                setOnTimeChangedListener { _, h, m ->
+                                    hour = h
+                                    minute = m
                                 }
                             }
+                        },
+                        modifier = Modifier
+                            .testTag(EditAlarmDialogTestTags.TIME_PICKER)
+                            .scale(1.2f),
+                        update = { view ->
+                            if (view.hour != hour) view.hour = hour
+                            if (view.minute != minute) view.minute = minute
+                        }
                     )
                     OutlinedTextField(
                         modifier = Modifier
@@ -195,7 +194,7 @@ fun EditAlarmDialog(
                         onClick = {
                             scope.launch {
                                 val newAlarm = alarm.copy(
-                                    time = (timePickerState.hour * 3600 + timePickerState.minute * 60).toUInt(),
+                                    time = (hour * 3600 + minute * 60).toUInt(),
                                     label = alarmLabel.text,
                                     days = selectedDays
                                 )
