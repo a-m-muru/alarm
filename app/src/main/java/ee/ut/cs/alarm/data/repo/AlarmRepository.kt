@@ -58,31 +58,29 @@ class AlarmRepositoryImpl private constructor(
 
     override suspend fun saveAlarm(alarm: Alarm) {
         context.alarmDataStore.updateData { currentList ->
-            val existingAlarms = currentList.alarmsList.toMutableList()
-            val existingIndex = existingAlarms.indexOfFirst { it.id == alarm.id.toString() }
+            val builder = currentList.toBuilder()
+            val existingIndex = currentList.alarmsList.indexOfFirst { it.id == alarm.id.toString() }
 
             if (existingIndex >= 0) {
-                existingAlarms[existingIndex] = alarm.toProto()
+                builder.setAlarms(existingIndex, alarm.toProto())
             } else {
-                existingAlarms.add(alarm.toProto())
+                builder.addAlarms(alarm.toProto())
             }
 
-            currentList
-                .toBuilder()
-                .clearAlarms()
-                .addAllAlarms(existingAlarms)
-                .build()
+            builder.build()
         }
     }
 
     override suspend fun deleteAlarm(alarm: Alarm) {
         context.alarmDataStore.updateData { currentList ->
-            currentList
+            val existingIndex = currentList.alarmsList.indexOfFirst { it.id == alarm.id.toString() }
+            if (existingIndex >= 0)
+                currentList
                 .toBuilder()
-                .clearAlarms()
-                .addAllAlarms(
-                    currentList.alarmsList.filter { it.id != alarm.id.toString() },
-                ).build()
+                .removeAlarms(existingIndex)
+                .build()
+            else
+                currentList
         }
     }
 
