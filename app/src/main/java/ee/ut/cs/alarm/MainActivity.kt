@@ -16,6 +16,13 @@ import ee.ut.cs.alarm.ui.theme.AlarmTheme
 class MainActivity : ComponentActivity() {
     private lateinit var permissionManager: PermissionManager
 
+    override fun onResume() {
+        super.onResume()
+
+        Log.d("MAINACTIVITY", "resumed")
+        tryGoToAlarmActivity()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -31,18 +38,7 @@ class MainActivity : ComponentActivity() {
             finish()
         }
 
-        Log.d("MAINACTIVITY", "singleton alarm is " + AlarmApplication.singletonAlarm)
-        if (AlarmApplication.singletonAlarm != null) {
-            val alarmIntent =
-                Intent(this, AlarmActivity::class.java).apply {
-                    putExtra(ALARM_INTENT_EXTRA_ALARM, AlarmApplication.singletonAlarm)
-                    putExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, AlarmApplication.singletonMinigameId)
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                }
-            startActivity(alarmIntent)
-            finish()
-            return
-        }
+        if (tryGoToAlarmActivity()) return
 
         enableEdgeToEdge()
         setContent {
@@ -58,5 +54,21 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    private fun tryGoToAlarmActivity(): Boolean {
+        Log.d("MAINACTIVITY", "singleton alarm is " + AlarmApplication.singletonAlarm)
+        if (AlarmApplication.singletonAlarm != null) {
+            val alarmIntent =
+                Intent(this, AlarmActivity::class.java).apply {
+                    putExtra(ALARM_INTENT_EXTRA_ALARM, AlarmApplication.singletonAlarm)
+                    putExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, AlarmApplication.singletonMinigameId)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+            startActivity(alarmIntent)
+            finish()
+            return true
+        }
+        return false
     }
 }
