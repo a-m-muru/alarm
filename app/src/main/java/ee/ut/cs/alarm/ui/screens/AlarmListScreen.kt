@@ -67,6 +67,10 @@ fun AlarmListScreen(
                                 text = { Text("About") },
                                 onClick = { onNavigate(Screen.About.route) }
                             )
+                            DropdownMenuItem(
+                                text = { Text("Settings") },
+                                onClick = { onNavigate(Screen.Settings.route) }
+                            )
                         }
                     }
                 }

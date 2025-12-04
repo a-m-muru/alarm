@@ -12,6 +12,7 @@ import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
 import ee.ut.cs.alarm.service.AlarmScheduler
 import ee.ut.cs.alarm.ui.screens.AboutScreen
 import ee.ut.cs.alarm.ui.screens.AlarmListScreen
+import ee.ut.cs.alarm.ui.screens.SettingsScreen
 import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
 import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModelFactory
 
@@ -46,10 +47,15 @@ fun AlarmNavigation(
         composable(Screen.About.route) {
             AboutScreen(onNavigate)
         }
+        composable(Screen.Settings.route) {
+            SettingsScreen(onNavigate)
+        }
     }
 }
 
 sealed class Screen(val route: String) {
     object AlarmList : Screen("alarmList")
     object About : Screen("about")
+    object Settings : Screen("settings")
+
 }
