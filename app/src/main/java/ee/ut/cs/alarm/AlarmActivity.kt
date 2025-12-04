@@ -83,6 +83,10 @@ class AlarmActivity : ComponentActivity() {
         Log.d("ALARM ACTIVITY", "got minigame id " + gameId)
         Log.i("ALARM ACTIVITY", "" + alarm)
 
+        val serviceIntent = Intent(this, AlarmForegroundService::class.java)
+        serviceIntent.setAction(ACTION_STOP_VIBRATION)
+        startService(serviceIntent)
+
         enableEdgeToEdge()
         setContent {
             AlarmTheme {

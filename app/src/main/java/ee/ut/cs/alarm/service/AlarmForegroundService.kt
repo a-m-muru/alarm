@@ -11,9 +11,12 @@ import android.media.AudioManager
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import ee.ut.cs.alarm.ACTION_STOP_ALARM
+import ee.ut.cs.alarm.ACTION_STOP_VIBRATION
 import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_ALARM
 import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_MINIGAME_ID
 import ee.ut.cs.alarm.AlarmActivity
@@ -26,6 +29,7 @@ import kotlin.random.Random
 
 class AlarmForegroundService : Service() {
     var mediaPlayer: MediaPlayer? = null
+    var vibrator: Vibrator? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -44,6 +48,8 @@ class AlarmForegroundService : Service() {
                 ).build(),
         )
         mediaPlayer?.isLooping = true
+
+        vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator?
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -57,6 +63,8 @@ class AlarmForegroundService : Service() {
             if (intent.action.equals(ACTION_STOP_ALARM)) {
                 stopSelf()
                 return START_NOT_STICKY
+            } else if (intent.action.equals(ACTION_STOP_VIBRATION)) {
+                stopVibration()
             }
         }
 
@@ -104,7 +112,7 @@ class AlarmForegroundService : Service() {
             alarm,
         )
 
-        mediaPlayer?.start()
+        playAlarmSound(this)
 
         return START_STICKY
     }
@@ -166,14 +174,36 @@ class AlarmForegroundService : Service() {
         startForeground(1, notifBuilder.build())
     }
 
-    // thanx CHATGPT 💝💝💝💝💝💝💝
     private fun playAlarmSound(ctx: Context) {
-        if (mediaPlayer != null) {
-            mediaPlayer?.release() // Release any existing MediaPlayer
-        }
-        mediaPlayer = MediaPlayer.create(ctx, R.raw.alarm_1)
-        mediaPlayer?.setLooping(true) // Enable looping
         mediaPlayer?.start() // Start playback
+        if (vibrator?.hasVibrator() == true) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                Log.d("ALARM FOREGROUND SERVICE", "starting repeating vibration")
+                var vibraLength: Long
+                val rand = Random.nextFloat()
+                if (rand < 0.2) {
+                    vibraLength = Random.nextLong(5000, 10000)
+                } else if (rand < 0.7) {
+                    vibraLength = Random.nextLong(500, 2000)
+                } else {
+                    vibraLength = Random.nextLong(50, 100)
+                }
+                val vibraDelay = Random.nextLong(15, 6000)
+                vibrator?.vibrate(
+                    VibrationEffect.createWaveform(longArrayOf(0, vibraLength, vibraDelay), 0),
+                )
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Log.d("ALARM FOREGROUND SERVICE", "starting one-time vibration")
+                vibrator?.vibrate(
+                    VibrationEffect.createOneShot(
+                        500,
+                        VibrationEffect.EFFECT_HEAVY_CLICK,
+                    ),
+                )
+            } else {
+                vibrator?.vibrate(500)
+            }
+        }
     }
 
     // thanx CHATGPT 💝💝💝💝💝💝💝
@@ -182,6 +212,13 @@ class AlarmForegroundService : Service() {
             mediaPlayer?.stop()
             mediaPlayer?.release()
             mediaPlayer = null
+        }
+        stopVibration()
+    }
+
+    private fun stopVibration() {
+        if (vibrator != null) {
+            vibrator?.cancel()
         }
     }
 }
