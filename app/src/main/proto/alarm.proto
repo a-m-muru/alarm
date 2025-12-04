@@ -15,4 +15,5 @@ message AlarmProto {
 
 message AlarmListProto {
   repeated AlarmProto alarms = 1;
+  int32 streak = 2;
 }
