@@ -32,6 +32,7 @@ class MainActivity : ComponentActivity() {
             val alarmIntent =
                 Intent(this, AlarmActivity::class.java).apply {
                     putExtra(ALARM_INTENT_EXTRA_ALARM, Alarm(time = 48u))
+                    putExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, 2)
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 }
             startActivity(alarmIntent)

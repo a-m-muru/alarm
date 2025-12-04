@@ -50,7 +50,7 @@ import java.util.Calendar
 
 class AlarmActivity : ComponentActivity() {
     companion object {
-        const val MAX_MINIGAMES = 3
+        const val MAX_MINIGAMES = 5 // == 1 + maximum minigame id
     }
 
     private fun isDarkModeOn(): Boolean {
@@ -188,8 +188,10 @@ class AlarmActivity : ComponentActivity() {
 
         when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
-            1 -> GoIntoTheLight(onNavigateBack = navback)
-            2 -> BalanceHole(onNavigateBack = navback)
+            1 -> JumpingJacks(onNavigateBack = navback)
+            2 -> GoIntoTheLight(onNavigateBack = navback)
+            3 -> GoIntoTheLight(onNavigateBack = navback)
+            4 -> BalanceHole(onNavigateBack = navback)
             else -> throw IllegalArgumentException("no minigame with id " + id)
         }
     }

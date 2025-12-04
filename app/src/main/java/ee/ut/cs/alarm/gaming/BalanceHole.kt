@@ -190,7 +190,7 @@ class Ball(
     var rotation: Float,
 ) {
     val BOUNCE_ENERGY_MULT = 0.9f
-    val FRICTION = 0.2f
+    val FRICTION = 20.0f
 
     val ACC_MULT = 100f
 

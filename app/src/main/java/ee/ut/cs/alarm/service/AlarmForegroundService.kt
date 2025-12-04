@@ -180,15 +180,18 @@ class AlarmForegroundService : Service() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 Log.d("ALARM FOREGROUND SERVICE", "starting repeating vibration")
                 var vibraLength: Long
+                var vibraDelay: Long
                 val rand = Random.nextFloat()
-                if (rand < 0.2) {
+                if (rand > 0.8) {
                     vibraLength = Random.nextLong(5000, 10000)
-                } else if (rand < 0.7) {
+                    vibraDelay = Random.nextLong(100, 10000)
+                } else if (rand > 0.5) {
                     vibraLength = Random.nextLong(500, 2000)
+                    vibraDelay = Random.nextLong(15, 6000)
                 } else {
                     vibraLength = Random.nextLong(50, 100)
+                    vibraDelay = Random.nextLong(10, 100)
                 }
-                val vibraDelay = Random.nextLong(15, 6000)
                 vibrator?.vibrate(
                     VibrationEffect.createWaveform(longArrayOf(0, vibraLength, vibraDelay), 0),
                 )
