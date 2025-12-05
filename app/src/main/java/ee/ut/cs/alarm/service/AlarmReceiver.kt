@@ -10,6 +10,10 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -34,6 +38,16 @@ class AlarmReceiver : BroadcastReceiver() {
         if (alarm.days > 0) {
             val alarmScheduler = AlarmScheduler(context)
             alarmScheduler.scheduleAlarm(alarm)
+        } else {
+            val pendingResult = goAsync()
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val repository = AlarmRepositoryImpl.getInstance(context)
+                    repository.saveAlarm(alarm.copy(enabled = false))
+                } finally {
+                    pendingResult.finish()
+                }
+            }
         }
 
 
