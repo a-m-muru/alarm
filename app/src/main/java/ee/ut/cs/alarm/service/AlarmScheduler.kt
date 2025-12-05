@@ -24,7 +24,7 @@ open class AlarmScheduler(
     }
 
     /**
-     * @param day The day of the week to convert. Starts from Sunday (1)
+     * @param day The day of the week to convert. Starts from Monday (1)
      * @return The converted day of the week.
      */
     open fun calendarDayToInt(day: Int): Int {
@@ -57,7 +57,7 @@ open class AlarmScheduler(
         calendar.set(Calendar.MILLISECOND, 0)
 
         if (calendar.timeInMillis <= System.currentTimeMillis())
-            calendar.add(Calendar.DAY_OF_WEEK, 1)
+            calendar.add(Calendar.DATE, 1)
 
         val daysMask = alarm.days.toInt()
 
@@ -68,14 +68,14 @@ open class AlarmScheduler(
         }
 
         // Set repeating alarm
-        val day = calendarDayToInt(calendar.get(Calendar.DAY_OF_WEEK)) - 2
+        val day = calendarDayToInt(calendar.get(Calendar.DAY_OF_WEEK)) - 2 // Sub 2 so Monaday shifts by 0
         // Find the first time the alarm needs to ring
         for (i in 1..7) {
-            if (daysMask and (1 shl ((i + day) % 7)) > 0) {
+            if (daysMask shr ((i + day) % 7) and 1 > 0) {
                 setAlarm(calendar, alarm)
-                break
+                return
             }
-            calendar.add(Calendar.DAY_OF_WEEK, 1)
+            calendar.add(Calendar.DATE, 1)
         }
     }
 

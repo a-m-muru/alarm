@@ -114,7 +114,7 @@ fun AlarmListScreen(
                             alarm = alarm,
                             cardToggled = {
                                 enabled ->
-                                    val al = alarm.copy(enabled=enabled) // ??? Is creating a copy needed
+                                    val al = alarm.copy(enabled=enabled)
                                     vm.updateItem(al)
                                     if (enabled) {
                                         alarmScheduler.scheduleAlarm(al)
@@ -128,7 +128,7 @@ fun AlarmListScreen(
                             },
                             onEdit = {
                                 showDialog = true
-                                editableAlarm = alarm
+                                editableAlarm = alarm.copy(enabled = true)
                             }
                         )
                     }
