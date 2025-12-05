@@ -1,10 +1,11 @@
 package ee.ut.cs.alarm.ui.components
 
 import android.content.Intent
+import android.provider.Settings
+import android.view.ContextThemeWrapper
 import android.widget.TimePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -133,7 +134,8 @@ fun EditAlarmDialog(
                 ) {
                     AndroidView(
                         factory = { ctx ->
-                            (android.view.LayoutInflater.from(ctx)
+                            val themedCtx = ContextThemeWrapper(ctx, R.style.Theme_Alarm)
+                            (android.view.LayoutInflater.from(themedCtx)
                                 .inflate(R.layout.spinner_time_picker, null, false) as TimePicker).apply {
                                 setIs24HourView(true) // Should be changeable in settings
                                 setOnTimeChangedListener { _, h, m ->

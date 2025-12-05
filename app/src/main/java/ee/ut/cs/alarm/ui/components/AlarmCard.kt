@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.data.Alarm
-import ee.ut.cs.alarm.data.Days
+import ee.ut.cs.alarm.data.Day
 import kotlin.experimental.and
 
 @Composable
@@ -38,11 +38,22 @@ fun AlarmCard(
     onDelete: () -> Unit
 ) {
     val timeString = String.format("%02d:%02d", (alarm.time / 3600u).toInt(), ((alarm.time / 60u) % 60u).toInt())
+
     val days: MutableList<String> = mutableListOf()
-    val ZERO = 0.toByte()
-    for (day in Days.keys)
-        if (alarm.days and day != ZERO)
-            days.add(Days[day]!!)
+    if (alarm.days and Day.MONDAY != 0.toByte())
+        days.add("Mon")
+    if (alarm.days and Day.TUESDAY != 0.toByte())
+        days.add("Tue")
+    if (alarm.days and Day.WEDNESDAY != 0.toByte())
+        days.add("Wed")
+    if (alarm.days and Day.THURSDAY != 0.toByte())
+        days.add("Thu")
+    if (alarm.days and Day.FRIDAY != 0.toByte())
+        days.add("Fri")
+    if (alarm.days and Day.SATURDAY != 0.toByte())
+        days.add("Sat")
+    if (alarm.days and Day.SUNDAY != 0.toByte())
+        days.add("Sun")
     val dayString = days.joinToString()
 
     val swipeToDismissBoxState = SwipeToDismissBoxState(
