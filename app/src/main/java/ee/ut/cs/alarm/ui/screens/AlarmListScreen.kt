@@ -1,6 +1,7 @@
 package ee.ut.cs.alarm.ui.screens
 
 import android.widget.Toast
+import android.os.Build
 import java.time.LocalTime
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,8 +51,12 @@ fun AlarmListScreen(
     val alarms by vm.items.collectAsState()
     val context = LocalContext.current
 
+    /**
+     * Show toast with time till alarm
+     * @param secondsToAlarm Time till alarm in seconds. Negative values are ignored.
+     */
     fun showTimeTillAlarmToast(secondsToAlarm: Long) {
-        if (secondsToAlarm < 0) return // Don't show toast for errors from scheduler
+        if (secondsToAlarm < 0) return
 
         val days = secondsToAlarm / (24 * 3600)
         val hours = (secondsToAlarm % (24 * 3600)) / 3600
@@ -99,7 +104,8 @@ fun AlarmListScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    editableAlarm = Alarm(time = LocalTime.now().toSecondOfDay().toUInt() + 60u)
+                    editableAlarm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Alarm(time = LocalTime.now().toSecondOfDay().toUInt() + 60u)
+                    else Alarm(time = System.currentTimeMillis().toUInt() / 1000u % (24u * 3600u) + 60u)
                     showDialog = true
                 }
             ) {

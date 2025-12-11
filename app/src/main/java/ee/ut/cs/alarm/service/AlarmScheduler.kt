@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import ee.ut.cs.alarm.data.Alarm
 import java.util.Calendar
 import java.util.UUID
@@ -33,6 +34,9 @@ open class AlarmScheduler(
         return (day + 5) % 7 + 1
     }
 
+    /**
+     * @return Whether the user has granted the permission to schedule exact alarms.
+     */
     fun canScheduleExactAlarms(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             alarmManager.canScheduleExactAlarms()
@@ -41,6 +45,12 @@ open class AlarmScheduler(
             true
         }
     }
+
+
+    /**
+     * @param alarm alarm to schedule.
+     * @return Time till the alarm should ring (in seconds).
+     */
     fun scheduleAlarm(alarm: Alarm): Long {
         if (!alarm.enabled) {
             cancelAlarm(alarm.id)
@@ -51,6 +61,7 @@ open class AlarmScheduler(
             return -2L
         }
 
+        // Get current time and change values in calendar to represent the alarm
         val calendar = Calendar.getInstance()
         val currentTime = calendar.timeInMillis
         calendar.set(Calendar.HOUR_OF_DAY, (alarm.time / 3600u).toInt())
@@ -81,10 +92,17 @@ open class AlarmScheduler(
             }
             calendar.add(Calendar.DATE, 1)
         }
+        Log.e("ALARM SCHEDULER", "Failed to set alarm")
         return -3L
     }
 
+
+    /**
+     * @param time The time to set the alarm for.
+     * @param alarm The alarm to set.
+     */
     fun setAlarm(time: Calendar, alarm: Alarm) {
+        Log.i("ALARM SCHEDULER", "Setting alarm for $time")
         val intent = Intent(context, AlarmReceiver::class.java)
         intent.putExtra("ut.cs.alarm.alarm", alarm)
         val pending =
@@ -101,6 +119,10 @@ open class AlarmScheduler(
         )
     }
 
+
+    /**
+     * @param id The id of the alarm to cancel.
+     */
     fun cancelAlarm(id: UUID) {
         val intent = Intent(context, AlarmReceiver::class.java)
         val pendingIntent =
