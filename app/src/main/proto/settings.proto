@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option java_package = "ee.ut.cs.alarm.data.proto";
+option java_multiple_files = true;
+
+enum AlarmTrack {
+  ALARM_TRACK_1 = 0;
+  ALARM_TRACK_2 = 1;
+  ALARM_TRACK_3 = 2;
+}
+
+enum AlarmGame {
+  ALARM_GAME_BALANCE_HOLE = 0;
+  ALARM_GAME_GO_INTO_THE_LIGHT = 1;
+  ALARM_GAME_JUMPING_JACKS = 2;
+}
+
+message UserPrefs {
+  string id = 1;
+  repeated AlarmTrack allowedTracks = 2;
+  repeated AlarmGame allowedGames = 3;
+
+  // Streak metadata
+  // If count is set to -1, then streak feature is not enabled
+  int32 streakCount = 4;
+  int32 prevStreakCount = 5;
+  uint64 lastMinigameTs = 6;
+}
