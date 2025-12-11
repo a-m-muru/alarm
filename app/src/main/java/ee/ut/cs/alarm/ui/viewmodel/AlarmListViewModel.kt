@@ -23,7 +23,7 @@ class AlarmListViewModel(
 
     init {
         viewModelScope.launch {
-            repo.getAlarms().collect { alarms -> _items.value = alarms }
+            repo.getAlarms().collect { alarms -> _items.value = alarms.sortedBy { alarm -> alarm.time } }
         }
     }
 
@@ -37,6 +37,8 @@ class AlarmListViewModel(
         viewModelScope.launch {
             repo.saveAlarm(alarm)
         }
+        _items.value += alarm
+        _items.value = _items.value.sortedBy { alarm -> alarm.time }
     }
 
     fun removeAlarm(alarm: Alarm) {
@@ -49,6 +51,7 @@ class AlarmListViewModel(
         viewModelScope.launch {
             repo.saveAlarm(alarm)
         }
+        _items.value = _items.value.sortedBy { alarm -> alarm.time }
     }
 
     fun toggleEnabled(alarm: Alarm) {
