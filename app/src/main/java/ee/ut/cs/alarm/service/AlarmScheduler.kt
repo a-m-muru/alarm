@@ -8,6 +8,7 @@ import android.os.Build
 import ee.ut.cs.alarm.data.Alarm
 import java.util.Calendar
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 open class AlarmScheduler(
     private val context: Context,
@@ -40,31 +41,34 @@ open class AlarmScheduler(
             true
         }
     }
-    fun scheduleAlarm(alarm: Alarm) {
+    fun scheduleAlarm(alarm: Alarm): Long {
         if (!alarm.enabled) {
             cancelAlarm(alarm.id)
-            return
+            return -1L
         }
 
         if (!canScheduleExactAlarms()) {
-            return
+            return -2L
         }
 
         val calendar = Calendar.getInstance()
+        val currentTime = calendar.timeInMillis
         calendar.set(Calendar.HOUR_OF_DAY, (alarm.time / 3600u).toInt())
         calendar.set(Calendar.MINUTE, ((alarm.time / 60u) % 60u).toInt())
         calendar.set(Calendar.SECOND, (alarm.time % 60u).toInt()) // ?? User can't set seconds for alarm
         calendar.set(Calendar.MILLISECOND, 0)
 
-        if (calendar.timeInMillis <= System.currentTimeMillis())
+        if (calendar.timeInMillis <= currentTime) {
+            // Move to next day if alarm time has already passed today
             calendar.add(Calendar.DATE, 1)
+        }
 
         val daysMask = alarm.days.toInt()
 
         // if no days are set, schedule for today or tomorrow if time has already passed today
         if (daysMask == 0) {
             setAlarm(calendar, alarm)
-            return
+            return TimeUnit.MILLISECONDS.toSeconds(calendar.timeInMillis - currentTime)
         }
 
         // Set repeating alarm
@@ -73,10 +77,11 @@ open class AlarmScheduler(
         for (i in 1..7) {
             if (daysMask shr ((i + day) % 7) and 1 > 0) {
                 setAlarm(calendar, alarm)
-                return
+                return TimeUnit.MILLISECONDS.toSeconds(calendar.timeInMillis - currentTime)
             }
             calendar.add(Calendar.DATE, 1)
         }
+        return -3L
     }
 
     fun setAlarm(time: Calendar, alarm: Alarm) {

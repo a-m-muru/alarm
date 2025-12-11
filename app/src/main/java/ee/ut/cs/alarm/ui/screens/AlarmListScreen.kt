@@ -1,6 +1,8 @@
 package ee.ut.cs.alarm.ui.screens
 
 import androidx.compose.foundation.background
+import android.widget.Toast
+import java.time.LocalTime
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.alarm.data.Alarm
@@ -49,6 +52,23 @@ fun AlarmListScreen(
     alarmScheduler: AlarmScheduler,
 ) {
     val alarms by vm.items.collectAsState()
+    val context = LocalContext.current
+
+    fun showTimeTillAlarmToast(secondsToAlarm: Long) {
+        if (secondsToAlarm < 0) return // Don't show toast for errors from scheduler
+
+        val days = secondsToAlarm / (24 * 3600)
+        val hours = (secondsToAlarm % (24 * 3600)) / 3600
+        val minutes = (secondsToAlarm % 3600) / 60
+
+        val text = listOfNotNull(
+            if (days > 0) "$days day${if (days > 1) "s" else ""}" else null,
+            if (hours > 0) "$hours hour${if (hours > 1) "s" else ""}" else null,
+            if (minutes > 0) "$minutes minute${if (minutes > 1) "s" else ""}" else null,
+        ).joinToString(", ").ifEmpty { "less than a minute" }
+
+        Toast.makeText(context, "$text till alarm", Toast.LENGTH_LONG).show()
+    }
 
     var showDialog by remember { mutableStateOf(false) }
     var editableAlarm by remember { mutableStateOf(Alarm()) }
@@ -100,14 +120,16 @@ fun AlarmListScreen(
                     ) { alarm ->
                         AlarmCard(
                             alarm = alarm,
-                            cardToggled = { enabled ->
-                                val al = alarm.copy(enabled = enabled)
-                                vm.updateItem(al)
-                                if (enabled) {
-                                    alarmScheduler.scheduleAlarm(al)
-                                } else {
-                                    alarmScheduler.cancelAlarm(alarm.id)
-                                }
+                            cardToggled = {
+                                enabled ->
+                                    val al = alarm.copy(enabled=enabled)
+                                    vm.updateItem(al)
+                                    if (enabled) {
+                                        val secondsToAlarm  = alarmScheduler.scheduleAlarm(al)
+                                        showTimeTillAlarmToast(secondsToAlarm)
+                                    } else {
+                                        alarmScheduler.cancelAlarm(alarm.id)
+                                    }
                             },
                             onDelete = {
                                 alarmScheduler.cancelAlarm(alarm.id)
@@ -133,7 +155,8 @@ fun AlarmListScreen(
                         } else {
                             vm.addAlarm(alarmToSave)
                         }
-                        alarmScheduler.scheduleAlarm(alarmToSave)
+                        val secondsToAlarm  = alarmScheduler.scheduleAlarm(alarmToSave)
+                        showTimeTillAlarmToast(secondsToAlarm)
                         showDialog = false
                     },
                     alarmScheduler = alarmScheduler,
