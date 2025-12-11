@@ -1,8 +1,7 @@
 package ee.ut.cs.alarm.ui.screens
 
-import androidx.compose.foundation.background
 import android.widget.Toast
-import java.time.LocalTime
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
