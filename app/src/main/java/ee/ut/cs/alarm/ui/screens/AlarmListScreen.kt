@@ -1,11 +1,14 @@
 package ee.ut.cs.alarm.ui.screens
 
-import android.widget.Toast
 import android.os.Build
-import java.time.LocalTime
+import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -39,15 +43,15 @@ import ee.ut.cs.alarm.ui.components.AlarmCard
 import ee.ut.cs.alarm.ui.components.EditAlarmDialog
 import ee.ut.cs.alarm.ui.navigation.Screen
 import ee.ut.cs.alarm.ui.viewmodel.AlarmListViewModel
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AlarmListScreen(
     onNavigate: (String) -> Unit,
     vm: AlarmListViewModel,
-    alarmScheduler: AlarmScheduler
+    alarmScheduler: AlarmScheduler,
 ) {
-    var expanded by remember { mutableStateOf(false) }
     val alarms by vm.items.collectAsState()
     val context = LocalContext.current
 
@@ -62,11 +66,12 @@ fun AlarmListScreen(
         val hours = (secondsToAlarm % (24 * 3600)) / 3600
         val minutes = (secondsToAlarm % 3600) / 60
 
-        val text = listOfNotNull(
-            if (days > 0) "$days day${if (days > 1) "s" else ""}" else null,
-            if (hours > 0) "$hours hour${if (hours > 1) "s" else ""}" else null,
-            if (minutes > 0) "$minutes minute${if (minutes > 1) "s" else ""}" else null,
-        ).joinToString(", ").ifEmpty { "less than a minute" }
+        val text =
+            listOfNotNull(
+                if (days > 0) "$days day${if (days > 1) "s" else ""}" else null,
+                if (hours > 0) "$hours hour${if (hours > 1) "s" else ""}" else null,
+                if (minutes > 0) "$minutes minute${if (minutes > 1) "s" else ""}" else null,
+            ).joinToString(", ").ifEmpty { "less than a minute" }
 
         Toast.makeText(context, "$text till alarm", Toast.LENGTH_LONG).show()
     }
@@ -77,76 +82,60 @@ fun AlarmListScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = { Text("All alarms") },
-                actions = {
-                    Box {
-                        IconButton(onClick = { expanded = !expanded }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "More")
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("About") },
-                                onClick = { onNavigate(Screen.About.route) }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Settings") },
-                                onClick = { onNavigate(Screen.Settings.route) }
-                            )
-                        }
-                    }
-                }
-            )
-         },
+            AlarmTopBar(onNavigate)
+        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
                     editableAlarm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Alarm(time = LocalTime.now().toSecondOfDay().toUInt() + 60u)
                     else Alarm(time = System.currentTimeMillis().toUInt() / 1000u % (24u * 3600u) + 60u)
                     showDialog = true
-                }
+                },
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
-        }
+        },
     ) { padding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
         ) {
+            StreakBox()
             if (alarms.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "No alarms set\nTap + to add your first alarm",
                         textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize().padding(bottom = 48.dp)) {
+                LazyColumn(
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 48.dp),
+                ) {
                     items(
                         items = alarms,
-                        key = { it.id }
+                        key = { it.id },
                     ) { alarm ->
                         AlarmCard(
                             alarm = alarm,
-                            cardToggled = {
-                                enabled ->
-                                    val al = alarm.copy(enabled=enabled)
-                                    vm.updateItem(al)
-                                    if (enabled) {
-                                        val secondsToAlarm  = alarmScheduler.scheduleAlarm(al)
-                                        showTimeTillAlarmToast(secondsToAlarm)
-                                    } else {
-                                        alarmScheduler.cancelAlarm(alarm.id)
-                                    }
+                            cardToggled = { enabled ->
+                                val al = alarm.copy(enabled = enabled)
+                                vm.updateItem(al)
+                                if (enabled) {
+                                    val secondsToAlarm = alarmScheduler.scheduleAlarm(al)
+                                    showTimeTillAlarmToast(secondsToAlarm)
+                                } else {
+                                    alarmScheduler.cancelAlarm(alarm.id)
+                                }
                             },
                             onDelete = {
                                 alarmScheduler.cancelAlarm(alarm.id)
@@ -155,7 +144,7 @@ fun AlarmListScreen(
                             onEdit = {
                                 showDialog = true
                                 editableAlarm = alarm.copy(enabled = true)
-                            }
+                            },
                         )
                     }
                 }
@@ -172,13 +161,50 @@ fun AlarmListScreen(
                         } else {
                             vm.addAlarm(alarmToSave)
                         }
-                        val secondsToAlarm  = alarmScheduler.scheduleAlarm(alarmToSave)
+                        val secondsToAlarm = alarmScheduler.scheduleAlarm(alarmToSave)
                         showTimeTillAlarmToast(secondsToAlarm)
                         showDialog = false
                     },
-                    alarmScheduler = alarmScheduler
+                    alarmScheduler = alarmScheduler,
                 )
             }
         }
     }
+}
+
+@Composable
+fun StreakBox() {
+    Box(modifier = Modifier.fillMaxWidth().background(Color.Red).height(30.dp)) {
+        Row { Text("Streak") }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AlarmTopBar(onNavigate: (String) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+
+    TopAppBar(
+        title = { Text("All alarms") },
+        actions = {
+            Box(contentAlignment = Alignment.TopStart) {
+                IconButton(onClick = { expanded = !expanded }) {
+                    Icon(Icons.Default.MoreVert, contentDescription = "More")
+                }
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("About") },
+                        onClick = { onNavigate(Screen.About.route) },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Settings") },
+                        onClick = { onNavigate(Screen.Settings.route) },
+                    )
+                }
+            }
+        },
+    )
 }
