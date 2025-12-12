@@ -42,7 +42,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
-
+import ee.ut.cs.alarm.R
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -51,6 +51,12 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
+import ee.ut.cs.alarm.Vec3
+import java.util.List.copyOf
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
+
 
 private val cameraExecutor = Executors.newSingleThreadExecutor()
 private val handler = Handler(Looper.getMainLooper())
@@ -113,6 +119,63 @@ class CenterPixelAnalyzer(
     }
 }
 
+/*
+returns hue in range 0-360
+ */
+fun rgbToHue(red: Float, green: Float, blue: Float) : Float{
+    var hue = 0.0f;
+    val max = maxOf(red, green, blue)
+    val min = minOf(red, green, blue)
+
+    val c = max - min
+
+    if (red > green && red > blue){
+        // x/red is max
+        hue = ((green - blue)/c) % 6
+    } else if (green > red && green > blue){
+        // y/green is max
+        hue = 2 + (blue - red)/c
+    } else {
+        // z/blue is max
+        hue = 4 + (red - green)/c
+    }
+    return hue * 60
+}
+fun hueFunK(n: Float, hue: Float): Float{
+    return (n + (hue/60)) % 6
+}
+
+fun hueFunF(n: Float, hue: Float): Float {
+    return 1 - max(0f, min(hueFunK(n, hue), 4f - hueFunK(n, hue)))
+}
+
+// returns color in range 0-1
+fun hueToRgb(hue: Float): ColorUI {
+    val red: Float = hueFunF(5f, hue)
+    val green: Float = hueFunF(3f, hue)
+    val blue: Float = hueFunF(1f, hue)
+
+    return ColorUI(red, green, blue)
+}
+
+// differenc in degrees
+fun degDiff(deg1: Float, deg2: Float): Float{
+    var a = deg1 - deg2
+    a = abs(((a + 180) % 360))
+
+    return a
+
+}
+
+
+fun generateRandomColorVec3(): Vec3 {
+    val red = (0..255).random().toFloat() / 255.0f
+    val green = (0..255).random().toFloat() / 255.0f
+    val blue = (0..255).random().toFloat() / 255.0f
+
+    return Vec3(red, green, blue)
+}
+
 @Composable
 fun CameraGame(onNavigateBack: () -> Unit) {
 
@@ -152,17 +215,64 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         var currentCount by remember { mutableStateOf(0) }
         val neededCount = 4
 
+        val neededColors = remember {
+            val neededColors = mutableListOf<ColorUI>()
+            while (neededColors.size < neededCount) {
+                //val randomColor = ColorUI(generateRandomColor())
+                val randomColorVec3 = generateRandomColorVec3().normalize()
+                val randomColor = hueToRgb(rgbToHue(randomColorVec3.x, randomColorVec3.y, randomColorVec3.z))
+                //val randomColorVec3 = Vec3(randomColor.red, randomColor.green, randomColor.blue).normalize()
+                if (neededColors.isEmpty()){
+                    neededColors.add(ColorUI(randomColor.red, randomColor.green, randomColor.blue))
+                    continue
+                }
+
+                var minDiff = 360.0f/neededCount
+
+                val hue = rgbToHue(randomColor.red, randomColor.green, randomColor.blue)
+
+                for (otherColor in copyOf(neededColors)) {
+                    //val otherColorVec3 = Vec3(otherColor.red, otherColor.green, otherColor.blue).normalize()
+                    // cant have colors too similar
+                    val hueOther = rgbToHue(otherColor.red, otherColor.green, otherColor.blue)
+
+                    if (degDiff(hue, hueOther) > minDiff){
+                        neededColors.add(ColorUI(randomColor.red, randomColor.green, randomColor.blue))
+                        break
+                    }
+                }
+            }
+            neededColors
+        }
+
+
+
 
         // pixel state
         var currentColor by remember { mutableStateOf(ColorUI.White) }
 
         val onColorDetected: (Int) -> Unit = remember {
             { newColor ->
-                // todo check if color is correct
-
-                currentCount = 4
+                //currentCount = 4
+                var margin = 20.0f
 
                 currentColor = ColorUI(newColor)
+
+                val hue = rgbToHue(currentColor.red, currentColor.green, currentColor.blue)
+
+
+                for (colorOther in neededColors) {
+
+                    val hueOther = rgbToHue(colorOther.red, colorOther.green, colorOther.blue)
+
+                    // if color is close to current color
+                    if (degDiff(hue, hueOther) < margin) {
+                        currentCount++
+                        AudioPlayer.playSound(context, R.raw.good)
+                        neededColors.remove(colorOther)
+                        break
+                    }
+                }
 
             }
         }
@@ -184,14 +294,14 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                         cameraProviderFuture.addListener({
                             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-                            // Configure Preview Use Case
+                            // Configure Preview
                             val preview = Preview.Builder()
                                 .build()
                                 .also {
                                     it.setSurfaceProvider(previewView.surfaceProvider)
                                 }
 
-                            // Configure ImageAnalysis Use Case
+                            // Configure ImageAnalysis
                             val imageAnalyzer = ImageAnalysis.Builder()
                                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                                 .setTargetResolution(Size(640, 480))
@@ -269,15 +379,26 @@ fun CameraGame(onNavigateBack: () -> Unit) {
             ) {
                 Text(text = "Color Camera", fontSize = 24.sp)
                 Text(
-                    text = "Point your phone towards color",
+                    text = "Point your phone towards colors:",
                     fontSize = 24.sp,
                     textAlign = TextAlign.Center,
                 )
+                // display needed colors
+                for (color in neededColors) {
+                    Text(text = "#### ${color.red}, ${color.green}, ${color.blue}", fontSize = 12.sp, color = color)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // color box
+
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
 
+                //val currentColorVec3Normalized = Vec3(currentColor.red, currentColor.green, currentColor.blue).normalize()
+                val onlyColor = hueToRgb(rgbToHue(currentColor.red, currentColor.green, currentColor.blue))
                 Text(
-                    text = "Current color (R, G, B): ${currentColor.red}, ${currentColor.green}, ${currentColor.blue}\"",
-                    fontSize = 24.sp
+                    text = "Current color (R, G, B): ${onlyColor.red}, ${onlyColor.green}, ${onlyColor.blue}\"",
+                    fontSize = 16.sp,
+                    color = onlyColor
                 )
 
                 Text(text = "Count: $currentCount/$neededCount", fontSize = 32.sp)
