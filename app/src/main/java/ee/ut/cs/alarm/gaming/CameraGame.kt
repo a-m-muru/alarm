@@ -52,6 +52,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import ee.ut.cs.alarm.Vec3
+import java.time.LocalDateTime
 import java.util.List.copyOf
 import kotlin.math.abs
 import kotlin.math.max
@@ -208,6 +209,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         }
     }
 
+
     if (hasCameraPermission) {
 
         val lifecycleOwner = LocalLifecycleOwner.current
@@ -215,7 +217,9 @@ fun CameraGame(onNavigateBack: () -> Unit) {
 
         // game state
         var currentCount by remember { mutableStateOf(0) }
-        val neededCount = 4
+
+        val neededCount = 8
+
         val minDiff = 360.0f/(neededCount.toFloat()+1f)
 
         val neededColors = remember {
@@ -234,8 +238,6 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                 if (currentHue >= 360){
                     currentHue -= 360
                 }
-
-
 
 
                 /*
@@ -269,10 +271,20 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         // pixel state
         var currentColor by remember { mutableStateOf(ColorUI.White) }
 
+        var firstOnColorTime by remember { mutableStateOf(0L) }
+
+
         val onColorDetected: (Int) -> Unit = remember {
             { newColor ->
                 //currentCount = 4
-                var margin = 20.0f
+                val margin = 10.0f
+                val neededTime = 2f * 1000f // seconds * 1000 = milliseconds
+                val currentTime = java.util.Date().time
+                val mercyFrames = 3
+                var currentMercyFrames = 0
+
+                var mercyCounting = false
+
 
                 currentColor = ColorUI(newColor)
 
@@ -283,12 +295,35 @@ fun CameraGame(onNavigateBack: () -> Unit) {
 
                     val hueOther = rgbToHue(colorOther.red, colorOther.green, colorOther.blue)
 
-                    // if color is close to current color
-                    if (degDiff(hue, hueOther) < margin) {
-                        //currentCount++
-                        //AudioPlayer.playSound(context, R.raw.good)
-                        //neededColors.remove(colorOther)
+
+                    if (currentTime - firstOnColorTime > neededTime && firstOnColorTime != 0L){ // if time has passed, good
+                        firstOnColorTime = 0L
+                        mercyCounting = false
+                        currentCount++
+                        AudioPlayer.playSound(context, R.raw.good)
+                        neededColors.remove(colorOther)
                         break
+                    }
+
+                    // if color is close to current color, start counting
+                    if (degDiff(hue, hueOther) < margin) {
+
+                        currentMercyFrames = 0
+                        mercyCounting = true
+
+                        if (firstOnColorTime == 0L){ // if first time, save first time
+                            firstOnColorTime = currentTime
+                        }
+
+                    } else { // if not correct, reset firstOnColorTime
+                        if (mercyCounting) {
+                            currentMercyFrames++
+                        }
+                        if (currentMercyFrames > mercyFrames) {
+                            firstOnColorTime = 0L
+                            currentMercyFrames = 0
+                            mercyCounting = false
+                        }
                     }
                 }
 
@@ -422,7 +457,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                     fontSize = 16.sp,
                     color = onlyColor
                 )
-                Text(text = "hue: $currentHue", fontSize = 16.sp, color = onlyColor)
+                Text(text = "hue: $currentHue, ${java.util.Date().time - firstOnColorTime}", fontSize = 16.sp, color = onlyColor)
 
                 Text(text = "Count: $currentCount/$neededCount", fontSize = 32.sp)
                 Spacer(modifier = Modifier.height(24.dp))
