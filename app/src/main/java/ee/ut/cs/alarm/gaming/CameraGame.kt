@@ -131,7 +131,7 @@ fun rgbToHue(red: Float, green: Float, blue: Float) : Float{
 
     if (red > green && red > blue){
         // x/red is max
-        hue = ((green - blue)/c) % 6
+        hue = abs(((green - blue)/c)) % 6
     } else if (green > red && green > blue){
         // y/green is max
         hue = 2 + (blue - red)/c
@@ -139,6 +139,8 @@ fun rgbToHue(red: Float, green: Float, blue: Float) : Float{
         // z/blue is max
         hue = 4 + (red - green)/c
     }
+
+
     return hue * 60
 }
 fun hueFunK(n: Float, hue: Float): Float{
@@ -161,7 +163,7 @@ fun hueToRgb(hue: Float): ColorUI {
 // differenc in degrees
 fun degDiff(deg1: Float, deg2: Float): Float{
     var a = deg1 - deg2
-    a = abs(((a + 180) % 360))
+    a = abs(((a + 180) % 360) - 180)
 
     return a
 
@@ -214,20 +216,36 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         // game state
         var currentCount by remember { mutableStateOf(0) }
         val neededCount = 4
+        val minDiff = 360.0f/(neededCount.toFloat()+1f)
 
         val neededColors = remember {
             val neededColors = mutableListOf<ColorUI>()
+
+            val randomColorVec3 = generateRandomColorVec3().normalize()
+            val randomHue = rgbToHue(randomColorVec3.x, randomColorVec3.y, randomColorVec3.z)
+            //val randomColor = hueToRgb(randomHue)
+            var currentHue = randomHue
+
             while (neededColors.size < neededCount) {
                 //val randomColor = ColorUI(generateRandomColor())
-                val randomColorVec3 = generateRandomColorVec3().normalize()
-                val randomColor = hueToRgb(rgbToHue(randomColorVec3.x, randomColorVec3.y, randomColorVec3.z))
+
+                neededColors.add(hueToRgb(currentHue))
+                currentHue += minDiff
+                if (currentHue >= 360){
+                    currentHue -= 360
+                }
+
+
+
+
+                /*
                 //val randomColorVec3 = Vec3(randomColor.red, randomColor.green, randomColor.blue).normalize()
                 if (neededColors.isEmpty()){
                     neededColors.add(ColorUI(randomColor.red, randomColor.green, randomColor.blue))
                     continue
                 }
 
-                var minDiff = 360.0f/neededCount
+
 
                 val hue = rgbToHue(randomColor.red, randomColor.green, randomColor.blue)
 
@@ -240,7 +258,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                         neededColors.add(ColorUI(randomColor.red, randomColor.green, randomColor.blue))
                         break
                     }
-                }
+                }*/
             }
             neededColors
         }
@@ -267,9 +285,9 @@ fun CameraGame(onNavigateBack: () -> Unit) {
 
                     // if color is close to current color
                     if (degDiff(hue, hueOther) < margin) {
-                        currentCount++
-                        AudioPlayer.playSound(context, R.raw.good)
-                        neededColors.remove(colorOther)
+                        //currentCount++
+                        //AudioPlayer.playSound(context, R.raw.good)
+                        //neededColors.remove(colorOther)
                         break
                     }
                 }
@@ -384,8 +402,11 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                     textAlign = TextAlign.Center,
                 )
                 // display needed colors
+                val currentHue = rgbToHue(currentColor.red, currentColor.green, currentColor.blue)
                 for (color in neededColors) {
+                    val hue = rgbToHue(color.red, color.green, color.blue)
                     Text(text = "#### ${color.red}, ${color.green}, ${color.blue}", fontSize = 12.sp, color = color)
+                    Text(text = "#### hue: ${hue}, diff:${degDiff(hue, currentHue)}", fontSize = 12.sp, color = color)
                     Spacer(modifier = Modifier.height(8.dp))
                     // color box
 
@@ -394,12 +415,14 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                 Spacer(modifier = Modifier.height(32.dp))
 
                 //val currentColorVec3Normalized = Vec3(currentColor.red, currentColor.green, currentColor.blue).normalize()
-                val onlyColor = hueToRgb(rgbToHue(currentColor.red, currentColor.green, currentColor.blue))
+
+                val onlyColor = hueToRgb(currentHue)
                 Text(
-                    text = "Current color (R, G, B): ${onlyColor.red}, ${onlyColor.green}, ${onlyColor.blue}\"",
+                    text = "Current color (R, G, B)${onlyColor.red}, ${onlyColor.green}, ${onlyColor.blue}",
                     fontSize = 16.sp,
                     color = onlyColor
                 )
+                Text(text = "hue: $currentHue", fontSize = 16.sp, color = onlyColor)
 
                 Text(text = "Count: $currentCount/$neededCount", fontSize = 32.sp)
                 Spacer(modifier = Modifier.height(24.dp))
