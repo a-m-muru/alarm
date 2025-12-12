@@ -2,7 +2,6 @@ package ee.ut.cs.alarm
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
@@ -37,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Weather
 import ee.ut.cs.alarm.gaming.BalanceHole
+import ee.ut.cs.alarm.gaming.CameraGame
 import ee.ut.cs.alarm.gaming.GoIntoTheLight
 import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.service.AlarmForegroundService
@@ -183,15 +183,14 @@ class AlarmActivity : ComponentActivity() {
     fun MinigameScreen(id: Int) {
         val navback = { end() }
 
-        // var id = id
-        // id = 2 // debug
 
-        when (id) {
+        when (5) {
             0 -> JumpingJacks(onNavigateBack = navback)
             1 -> JumpingJacks(onNavigateBack = navback)
             2 -> GoIntoTheLight(onNavigateBack = navback)
             3 -> GoIntoTheLight(onNavigateBack = navback)
             4 -> BalanceHole(onNavigateBack = navback)
+            5 -> CameraGame(onNavigateBack = navback)
             else -> throw IllegalArgumentException("no minigame with id " + id)
         }
     }
