@@ -46,6 +46,6 @@ https://github.com/user-attachments/assets/e8feb496-72af-471e-a12f-99b7ea68c40f
 get streak  
 https://github.com/user-attachments/assets/a7f425e9-b2f5-4a55-a70d-a21ae42ecdda
 
-starting from backround
+starting from backround  
 https://github.com/user-attachments/assets/6fcec40e-34f0-4126-bf8b-5bf6a8fd6319
 
