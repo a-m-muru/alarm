@@ -24,6 +24,14 @@ val Days: Map<Byte, String> = mapOf(
     Day.SATURDAY to "Sat",
     Day.SUNDAY to "Sun")
 
+/**
+ * @param id id of the alarm.
+ * @param time time of the alarm from midnight(00:00) in seconds.
+ * @param days days of the week the alarm should ring. Bitmask with Monday = 1 << 0, Tuesday = 1 << 1, etc.
+ * @param label label or message to be displayed with the alarm.
+ * @param ringtoneUri uri of the ringtone to be played with the alarm.
+ * @param enabled whether the alarm is enabled.
+ */
 data class Alarm(
     var id: UUID = UUID.randomUUID(),
     var time: UInt = 0u,
@@ -46,8 +54,8 @@ data class Alarm(
                 val label = source.readString()
                 val ringtoneUri = source.readString()
                 val createdAt = source.readLong()
-                val enabled = source.readByte()
-                return Alarm(id, time, days, label, ringtoneUri, createdAt, enabled == 0x01.toByte())
+                val enabled = source.readByte() == 0x01.toByte()
+                return Alarm(id, time, days, label, ringtoneUri, createdAt, enabled)
             }
 
             return Alarm()

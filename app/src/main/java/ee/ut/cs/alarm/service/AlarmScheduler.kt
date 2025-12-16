@@ -5,9 +5,11 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import ee.ut.cs.alarm.data.Alarm
 import java.util.Calendar
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 open class AlarmScheduler(
     private val context: Context,
@@ -32,6 +34,9 @@ open class AlarmScheduler(
         return (day + 5) % 7 + 1
     }
 
+    /**
+     * @return Whether the user has granted the permission to schedule exact alarms.
+     */
     fun canScheduleExactAlarms(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             alarmManager.canScheduleExactAlarms()
@@ -40,31 +45,41 @@ open class AlarmScheduler(
             true
         }
     }
-    fun scheduleAlarm(alarm: Alarm) {
+
+
+    /**
+     * @param alarm alarm to schedule.
+     * @return Time till the alarm should ring (in seconds).
+     */
+    fun scheduleAlarm(alarm: Alarm): Long {
         if (!alarm.enabled) {
             cancelAlarm(alarm.id)
-            return
+            return -1L
         }
 
         if (!canScheduleExactAlarms()) {
-            return
+            return -2L
         }
 
+        // Get current time and change values in calendar to represent the alarm
         val calendar = Calendar.getInstance()
+        val currentTime = calendar.timeInMillis
         calendar.set(Calendar.HOUR_OF_DAY, (alarm.time / 3600u).toInt())
         calendar.set(Calendar.MINUTE, ((alarm.time / 60u) % 60u).toInt())
         calendar.set(Calendar.SECOND, (alarm.time % 60u).toInt()) // ?? User can't set seconds for alarm
         calendar.set(Calendar.MILLISECOND, 0)
 
-        if (calendar.timeInMillis <= System.currentTimeMillis())
+        if (calendar.timeInMillis <= currentTime) {
+            // Move to next day if alarm time has already passed today
             calendar.add(Calendar.DATE, 1)
+        }
 
         val daysMask = alarm.days.toInt()
 
         // if no days are set, schedule for today or tomorrow if time has already passed today
         if (daysMask == 0) {
             setAlarm(calendar, alarm)
-            return
+            return TimeUnit.MILLISECONDS.toSeconds(calendar.timeInMillis - currentTime)
         }
 
         // Set repeating alarm
@@ -73,13 +88,21 @@ open class AlarmScheduler(
         for (i in 1..7) {
             if (daysMask shr ((i + day) % 7) and 1 > 0) {
                 setAlarm(calendar, alarm)
-                return
+                return TimeUnit.MILLISECONDS.toSeconds(calendar.timeInMillis - currentTime)
             }
             calendar.add(Calendar.DATE, 1)
         }
+        Log.e("ALARM SCHEDULER", "Failed to set alarm")
+        return -3L
     }
 
+
+    /**
+     * @param time The time to set the alarm for.
+     * @param alarm The alarm to set.
+     */
     fun setAlarm(time: Calendar, alarm: Alarm) {
+        Log.i("ALARM SCHEDULER", "Setting alarm for $time")
         val intent = Intent(context, AlarmReceiver::class.java)
         intent.putExtra("ut.cs.alarm.alarm", alarm)
         val pending =
@@ -96,6 +119,10 @@ open class AlarmScheduler(
         )
     }
 
+
+    /**
+     * @param id The id of the alarm to cancel.
+     */
     fun cancelAlarm(id: UUID) {
         val intent = Intent(context, AlarmReceiver::class.java)
         val pendingIntent =

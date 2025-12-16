@@ -56,6 +56,9 @@ class AlarmRepositoryImpl private constructor(
                 alarmList.alarmsList.map { Alarm.fromProto(it) }
             }
 
+    /**
+     * @param alarm alarm to save.
+     */
     override suspend fun saveAlarm(alarm: Alarm) {
         context.alarmDataStore.updateData { currentList ->
             val builder = currentList.toBuilder()
@@ -71,6 +74,9 @@ class AlarmRepositoryImpl private constructor(
         }
     }
 
+    /**
+     * @param alarm alarm to delete.
+     */
     override suspend fun deleteAlarm(alarm: Alarm) {
         context.alarmDataStore.updateData { currentList ->
             val existingIndex = currentList.alarmsList.indexOfFirst { it.id == alarm.id.toString() }
