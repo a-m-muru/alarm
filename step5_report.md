@@ -28,6 +28,9 @@ You set the alarm, the alarm rings until you complete the game, then you can dis
 
 ## Demo videos
 
-camera color sellecting game
+camera color sellecting game  
 https://github.com/user-attachments/assets/ca737405-2241-49ee-8d65-cd74f08361a7
+
+loosing streak  
+https://github.com/user-attachments/assets/e8feb496-72af-471e-a12f-99b7ea68c40f
 
