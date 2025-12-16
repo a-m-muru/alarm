@@ -19,6 +19,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -191,7 +192,7 @@ fun closestHue(
     hue: Float,
     colors: List<ColorUI>,
 ): Pair<Float, Int> {
-    var closestHue = 180f
+    var closestHue = 181f
     var closestIndex = -1
     for (i in colors.indices) {
         val color = colors[i]
@@ -202,6 +203,10 @@ fun closestHue(
         }
     }
     return Pair(closestHue, closestIndex)
+}
+
+fun inverseHue(hue: Float): Float {
+    return (hue + 180) % 360
 }
 
 @Composable
@@ -296,15 +301,18 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         var lastClosestNeededHue by remember { mutableStateOf(0f) }
         var closestNeededHue by remember { mutableStateOf(0f) }
 
+        var closestIndexMercy by remember { mutableStateOf(-1) }
+
+
         val mercyFrames = 5
         var currentMercyFrames by remember { mutableStateOf(0) }
         var mercyCounting by remember { mutableStateOf(false) }
 
+        val margin = 20.0f
+
         val onColorDetected: (Int) -> Unit =
             remember {
                 { newColor ->
-                    // currentCount = 4
-                    val margin = 15.0f
 
                     val currentTime = java.util.Date().time
 
@@ -325,7 +333,8 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                             mercyCounting = false
                             currentCount++
                             AudioPlayer.playSound(context, R.raw.good)
-                            neededColors.removeAt(closestIndex)
+                            if (closestIndexMercy != -1)
+                                neededColors.removeAt(closestIndexMercy)
                             break
                         }
 
@@ -336,6 +345,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
 
                             if (firstOnColorTime == 0L) { // if first time, save first time
                                 firstOnColorTime = currentTime
+                                closestIndexMercy = closestIndex
                             }
                         } else { // if not correct, reset firstOnColorTime
                             if (mercyCounting) {
@@ -346,6 +356,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                                 firstOnColorTime = 0L
                                 currentMercyFrames = 0
                                 mercyCounting = false
+                                closestIndexMercy = -1
                             }
                         }
                     }
@@ -415,9 +426,9 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                     modifier = Modifier.fillMaxSize(),
                 )
 
-                // OPTIONAL: Draw a center target (crosshair) over the camera view
+                // Draw a center target (crosshair) over the camera view
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val strokeWidth = 5.dp.toPx()
+                    val strokeWidth = 3.dp.toPx()
                     val targetSize = 20.dp.toPx()
                     val center = Offset(size.width / 2f, size.height / 2f)
 
@@ -464,15 +475,17 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                     fontSize = 24.sp,
                     textAlign = TextAlign.Center,
                 )
+                Text(text = "you need to be within +-${margin} degrees of the color", fontSize = 16.sp)
                 // display needed colors
                 val currentHue = rgbToHue(currentColor.red, currentColor.green, currentColor.blue)
                 for (color in neededColors) {
                     val hue = rgbToHue(color.red, color.green, color.blue)
                     // Text(text = "#### ${color.red}, ${color.green}, ${color.blue}", fontSize = 12.sp, color = color)
                     Text(
-                        text = "#### hue: $hue, diff:${degDiff(hue, currentHue)}",
+                        text = "#### hue: ${hue.toInt()}, diff:${degDiff(hue, currentHue).toInt()}",
                         fontSize = 12.sp,
-                        color = hueToRgb(hue),
+                        color = if(degDiff(hue, 60f) > degDiff(hue, 240f)) ColorUI.White else ColorUI.Black,
+                        modifier = Modifier.background(hueToRgb(hue)),
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     // color box
@@ -489,7 +502,12 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                     fontSize = 16.sp,
                     color = onlyColor,
                 )
-                Text(text = "hue: $currentHue", fontSize = 24.sp, color = hueToRgb(currentHue))
+                Text(
+                    text = "hue: ${currentHue.toInt()}",
+                    fontSize = 24.sp,
+                    color = if(degDiff(currentHue, 60f) > degDiff(currentHue, 240f)) ColorUI.White else ColorUI.Black,
+                    modifier = Modifier.background(hueToRgb(currentHue)),
+                )
                 Text(
                     text =
                         if (holdsecs > 0) {
