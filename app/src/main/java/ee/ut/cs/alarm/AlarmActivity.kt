@@ -63,10 +63,14 @@ class AlarmActivity : ComponentActivity() {
         super.onPause()
 
         val activityManager =
-            getApplicationContext()
+            applicationContext
                 .getSystemService(ACTIVITY_SERVICE) as ActivityManager
 
-        activityManager.moveTaskToFront(getTaskId(), 0)
+        try {
+            activityManager.moveTaskToFront(taskId, 0)
+        } catch (e: Exception) {
+            Log.e("ALARM ACTIVITY", "error moving task to front")
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
