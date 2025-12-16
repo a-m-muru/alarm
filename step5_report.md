@@ -28,6 +28,12 @@ You set the alarm, the alarm rings until you complete the game, then you can dis
 
 ## Demo videos
 
+create alarm  
+https://github.com/user-attachments/assets/6d2433a9-9ce6-439a-b816-bdf630226eb4
+
+edit alarm  
+https://github.com/user-attachments/assets/038ec47d-dada-4ef5-bbd1-c0178ee7ccc3
+
 camera color sellecting game  
 https://github.com/user-attachments/assets/ca737405-2241-49ee-8d65-cd74f08361a7
 
