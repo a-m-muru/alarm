@@ -4,6 +4,42 @@ import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sqrt
 
+/**
+ * THANKS CHAT GPT
+ * Returns an integer representation of the current UTC date in YYYYMMDD form.
+ * Example: 20251216 for Dec 16, 2025.
+ */
+fun currentDayIntUtc(): Int {
+    val cal = java.util.Calendar.getInstance()
+    val year = cal.get(java.util.Calendar.YEAR)
+    val month = cal.get(java.util.Calendar.MONTH) + 1 // MONTH is 0-based
+    val day = cal.get(java.util.Calendar.DAY_OF_MONTH)
+    return year * 10000 + month * 100 + day
+}
+
+class Vec2(
+    var x: Float,
+    var y: Float,
+) {
+    operator fun plus(v: Vec2): Vec2 {
+        x += v.x
+        y += v.y
+        return this
+    }
+
+    operator fun minus(v: Vec2): Vec2 {
+        x -= v.x
+        y -= v.y
+        return this
+    }
+
+    operator fun times(mul: Float): Vec2 = Vec2(x * mul, y * mul)
+
+    fun distanceTo(v: Vec2): Float = sqrt((x - v.x).toDouble().pow(2) + (y - v.y).toDouble().pow(2)).toFloat()
+
+    fun length(): Float = sqrt(x.toDouble().pow(2) + y.toDouble().pow(2)).toFloat()
+}
+
 data class Vec3(var x: Float, var y: Float, var z: Float) {
     operator fun plus(other: Vec3): Vec3 {
         return Vec3(x + other.x, y + other.y, z + other.z)

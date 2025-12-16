@@ -22,6 +22,7 @@ import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_MINIGAME_ID
 import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.AlarmApplication
 import ee.ut.cs.alarm.R
+import ee.ut.cs.alarm.currentDayIntUtc
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.repo.AlarmRepository
 import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
@@ -244,7 +245,16 @@ class AlarmForegroundService : Service() {
                 "SINGLETON STREAK IS NULL WHEN STOPPING ALARM... IT ALL COMES CRASHING DOWN... THERE IS NOTHING LEFT... GIVE UP.",
             )
         }
-        runBlocking { repo.setStreak(AlarmApplication.singletonStreak!! + 1) }
+        val day = currentDayIntUtc()
+        // only increment if we haven't incremented today
+        val lastStreakDay = runBlocking { repo.getLastStreakDay() }
+        if (lastStreakDay < day) {
+            AlarmApplication.singletonStreak =
+                AlarmApplication.singletonStreak!! + 1
+        }
+        runBlocking { repo.setLastStreakDay(day) }
+        Log.d("ALARM FOREGROUND SERVICE", "last streak day: $lastStreakDay")
+        runBlocking { repo.setStreak(AlarmApplication.singletonStreak!!) }
         AlarmApplication.singletonStreak = null
         stopAlarmSound()
         stopVibration()

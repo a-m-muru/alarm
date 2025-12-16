@@ -206,14 +206,15 @@ fun StreakBox(
     previousStreak: Int,
     modifier: Modifier = Modifier,
 ) {
+    Log.d("StreakBox", "streak: $streak, prev: $previousStreak")
     var increased by remember { mutableStateOf(false) }
     increased = streak > previousStreak
     val primColor = MaterialTheme.colorScheme.primary
     val color =
         when {
             increased -> Color(0xFF4CAF50) // green
-            streak == previousStreak -> primColor // neutral
-            else -> Color(0xFFF44336) // red
+            streak < previousStreak -> Color(0xFFF44336) // red
+            else -> primColor // neutral
         }
 
     var streakLevel by remember { mutableStateOf("") }
@@ -325,6 +326,8 @@ fun StreakBox(
                 animationSpec = tween(durationMillis = 4000, delayMillis = 1000),
             )
             increased = false
+            alpha.animateTo(1F)
+        } else {
             alpha.animateTo(1F)
         }
     }
