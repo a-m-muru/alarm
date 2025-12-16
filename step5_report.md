@@ -26,4 +26,8 @@ You set the alarm, the alarm rings until you complete the game, then you can dis
 ## Limitations and improvements
 * uses media volume not alarm volume
 
-## Demo video
+## Demo videos
+
+camera color sellecting game
+https://github.com/user-attachments/assets/ca737405-2241-49ee-8d65-cd74f08361a7
+
