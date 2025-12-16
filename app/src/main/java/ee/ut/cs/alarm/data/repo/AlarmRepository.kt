@@ -1,6 +1,7 @@
 package ee.ut.cs.alarm.data.repo
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
@@ -36,6 +37,10 @@ interface AlarmRepository {
     suspend fun deleteAlarm(alarm: Alarm)
 
     suspend fun getAlarmByID(alarmID: UUID): Alarm?
+
+    fun streakFlow(): Flow<Int>
+
+    fun previousStreakFlow(): Flow<Int>
 
     suspend fun getStreak(): Int
 
@@ -108,32 +113,46 @@ class AlarmRepositoryImpl private constructor(
             }
 
     // #region CHATGPT
-    override suspend fun getStreak(): Int =
-        context.alarmDataStore.data
-            .map { it.meta?.streak ?: 0 }
-            .first()
-            .toInt()
+    override fun streakFlow(): Flow<Int> = context.alarmDataStore.data.map { it.meta?.streak ?: 0 }
 
-    override suspend fun getPreviousStreak(): Int =
-        context.alarmDataStore.data
-            .map { it.meta?.previousStreak ?: 0 }
-            .first()
-            .toInt()
+    override fun previousStreakFlow(): Flow<Int> = context.alarmDataStore.data.map { it.meta?.previousStreak ?: 0 }
+
+    override suspend fun getStreak(): Int {
+        val value =
+            context.alarmDataStore.data
+                .map { it.meta?.streak ?: 0 }
+                .first()
+        Log.d("ALARM REPOSITORY", "value of streak is $value")
+        return value
+    }
+
+    override suspend fun getPreviousStreak(): Int {
+        val value =
+            context.alarmDataStore.data
+                .map { it.meta?.previousStreak ?: 0 }
+                .first()
+        Log.d("ALARM REPOSITORY", "value of previous streak is $value")
+        return value
+    }
 
     override suspend fun setStreak(to: Int) {
+        Log.d("ALARM REPOSITORY", "setting streak to $to")
         context.alarmDataStore.updateData { current ->
             val meta = current.meta?.toBuilder() ?: GlobalMeta.newBuilder()
             meta.streak = to
             current.toBuilder().setMeta(meta).build()
         }
+        //getStreak()
     }
 
     override suspend fun setPreviousStreak(to: Int) {
+        Log.d("ALARM REPOSITORY", "setting previous streak to $to")
         context.alarmDataStore.updateData { current ->
             val meta = current.meta?.toBuilder() ?: GlobalMeta.newBuilder()
             meta.previousStreak = to
             current.toBuilder().setMeta(meta).build()
         }
+        //getPreviousStreak()
     }
     // #endregion CHATGPT
 

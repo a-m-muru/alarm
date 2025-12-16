@@ -11,11 +11,14 @@ import androidx.core.content.ContextCompat
 import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_ALARM
 import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_MINIGAME_ID
 import ee.ut.cs.alarm.AlarmActivity
+import ee.ut.cs.alarm.AlarmApplication
 import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.data.repo.AlarmRepository
 import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -33,6 +36,16 @@ class AlarmReceiver : BroadcastReceiver() {
         if (alarm == null) {
             Log.e("ALARM RECEIVER", "alarm was null!! stopping anything")
             return
+        }
+
+        Log.i("ALARM RECEIVER", "received alarm $alarm")
+
+        val repo: AlarmRepository = AlarmRepositoryImpl.getInstance(context)
+
+        if (AlarmApplication.singletonStreak == null) {
+            AlarmApplication.singletonStreak = runBlocking { repo.getStreak() }
+            runBlocking { repo.setPreviousStreak(repo.getStreak()) }
+            runBlocking { repo.setStreak(0) }
         }
 
         Log.i("ALARM RECEIVER", "packing up and sending $alarm")

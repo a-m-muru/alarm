@@ -23,6 +23,9 @@ import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.AlarmApplication
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.data.Alarm
+import ee.ut.cs.alarm.data.repo.AlarmRepository
+import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
+import kotlinx.coroutines.runBlocking
 import java.text.DateFormat
 import java.util.Calendar
 import kotlin.random.Random
@@ -60,12 +63,16 @@ class AlarmForegroundService : Service() {
         flags: Int,
         startId: Int,
     ): Int {
+        Log.d("ALARM FOREGROUND SERVICE", "!!start command!!")
+
         if (intent != null && intent.action != null) {
             if (intent.action.equals(ACTION_STOP_ALARM)) {
-                stopSelf()
+                Log.d("ALARM FOREGROUND SERVICE", "stop alarm command received")
+                stopAlarm(AlarmRepositoryImpl.getInstance(this))
                 return START_NOT_STICKY
             } else if (intent.action.equals(ACTION_STOP_VIBRATION)) {
                 stopVibration()
+                return START_NOT_STICKY
             }
         }
 
@@ -146,10 +153,11 @@ class AlarmForegroundService : Service() {
         val cal = Calendar.getInstance()
         val hour = alarm.time.toInt() / 3600
         cal.set(Calendar.HOUR_OF_DAY, hour)
-        if (hour != 0)
+        if (hour != 0) {
             cal.set(Calendar.MINUTE, (alarm.time.toInt() / 60) % (hour * 60))
-        else
+        } else {
             cal.set(Calendar.MINUTE, alarm.time.toInt() / 60)
+        }
         val titleTexts =
             arrayOf(
                 "Rise and SHINE",
@@ -227,5 +235,19 @@ class AlarmForegroundService : Service() {
         if (vibrator != null) {
             vibrator?.cancel()
         }
+    }
+
+    private fun stopAlarm(repo: AlarmRepository) {
+        Log.d("ALARM FOREGROUND SERVICE", "stoppiong alarm")
+        if (AlarmApplication.singletonStreak == null) {
+            throw RuntimeException(
+                "SINGLETON STREAK IS NULL WHEN STOPPING ALARM... IT ALL COMES CRASHING DOWN... THERE IS NOTHING LEFT... GIVE UP.",
+            )
+        }
+        runBlocking { repo.setStreak(AlarmApplication.singletonStreak!! + 1) }
+        AlarmApplication.singletonStreak = null
+        stopAlarmSound()
+        stopVibration()
+        stopSelf()
     }
 }
