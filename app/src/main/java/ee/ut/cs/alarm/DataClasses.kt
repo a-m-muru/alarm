@@ -1,6 +1,5 @@
 package ee.ut.cs.alarm
 
-import ee.ut.cs.alarm.gaming.Vec3
 import kotlin.math.pow
 import kotlin.math.round
 import kotlin.math.sqrt
@@ -28,6 +27,14 @@ data class Vec3(var x: Float, var y: Float, var z: Float) {
     fun toFloatArray(): FloatArray {
         return floatArrayOf(x, y, z)
     }
+
+    fun distance(other: Vec3): Float {
+        val dx = x - other.x
+        val dy = y - other.y
+        val dz = z - other.z
+        return sqrt(dx.pow(2) + dy.pow(2) + dz.pow(2))
+    }
+
     override fun toString(): String {
         return "(${round(x * 100.0f) / 100.0f}, ${round(y * 100.0f) / 100.0f}, ${round(z * 100.0f) / 100.0f})"
     }

@@ -84,6 +84,12 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.protobuf.javalite)
     implementation(libs.androidx.navigation.compose)
+
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.lifecycle)
+
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
     androidTestImplementation(libs.androidx.junit)

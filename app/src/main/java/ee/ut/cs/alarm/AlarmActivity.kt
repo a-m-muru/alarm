@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.Weather
 import ee.ut.cs.alarm.gaming.BalanceHole
+import ee.ut.cs.alarm.gaming.CameraGame
 import ee.ut.cs.alarm.gaming.GoIntoTheLight
 import ee.ut.cs.alarm.gaming.JumpingJacks
 import ee.ut.cs.alarm.service.AlarmForegroundService
@@ -183,8 +184,6 @@ class AlarmActivity : ComponentActivity() {
     fun MinigameScreen(id: Int) {
         val navback = { end() }
 
-        // var id = id
-        // id = 2 // debug
 
         when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
@@ -192,6 +191,7 @@ class AlarmActivity : ComponentActivity() {
             2 -> GoIntoTheLight(onNavigateBack = navback)
             3 -> GoIntoTheLight(onNavigateBack = navback)
             4 -> BalanceHole(onNavigateBack = navback)
+            5 -> CameraGame(onNavigateBack = navback)
             else -> throw IllegalArgumentException("no minigame with id " + id)
         }
     }
