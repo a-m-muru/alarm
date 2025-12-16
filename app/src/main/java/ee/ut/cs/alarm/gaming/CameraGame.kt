@@ -552,34 +552,33 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                     Spacer(modifier = Modifier.height(32.dp))
 
                     // val currentColorVec3Normalized = Vec3(currentColor.red, currentColor.green, currentColor.blue).normalize()
-
-                        val onlyColor = hueToRgb(currentHue)
-                        val holdsecs =
-                            (neededTime - (java.util.Date().time - firstOnColorTime)) / 1000
-                        Text(
-                            text = "Current color (R, G, B)${onlyColor.red}, ${onlyColor.green}, ${onlyColor.blue}",
-                            fontSize = 16.sp,
-                            color = onlyColor,
-                        )
-                        Text(
-                            text = "hue: ${currentHue.toInt()}",
-                            fontSize = 24.sp,
-                            color = if (degDiff(currentHue, 60f) > degDiff(
-                                    currentHue,
-                                    240f
-                                )
-                            ) ColorUI.White else ColorUI.Black,
-                            modifier = Modifier.background(hueToRgb(currentHue)),
-                        )
-                        Text(
-                            text =
-                                if (holdsecs > 0) {
-                                    "Hold for: %.1f seconds".format(holdsecs)
-                                } else {
-                                    "Find one of the unsolved colors!"
-                                },
-                            fontSize = 24.sp,
-                        )
+                    val onlyColor = hueToRgb(currentHue)
+                    val holdsecs =
+                        (neededTime - (java.util.Date().time - firstOnColorTime)) / 1000
+                    Text(
+                        text = "Current color (R, G, B)${onlyColor.red}, ${onlyColor.green}, ${onlyColor.blue}",
+                        fontSize = 16.sp,
+                        color = onlyColor,
+                    )
+                    Text(
+                        text = "hue: ${currentHue.toInt()}",
+                        fontSize = 24.sp,
+                        color = if (degDiff(currentHue, 60f) > degDiff(
+                                currentHue,
+                                240f
+                            )
+                        ) ColorUI.White else ColorUI.Black,
+                        modifier = Modifier.background(hueToRgb(currentHue)),
+                    )
+                    Text(
+                        text =
+                            if (holdsecs > 0) {
+                                "Hold for: %.1f seconds".format(holdsecs)
+                            } else {
+                                "Find one of the unsolved colors!"
+                            },
+                        fontSize = 24.sp,
+                    )
 
                     // Text(text = "closestNeededHue: $closestNeededHue", fontSize = 16.sp, color = onlyColor)
 
