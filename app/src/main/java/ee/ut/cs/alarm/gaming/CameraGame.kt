@@ -242,7 +242,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         // game state
         var currentCount by remember { mutableStateOf(0) }
 
-        val neededCount = 4
+        val neededCount = 6
 
         val minDiff = 360.0f/(neededCount.toFloat()+1f)
 
@@ -296,6 +296,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         var currentColor by remember { mutableStateOf(ColorUI.White) }
 
         var firstOnColorTime by remember { mutableStateOf(0L) }
+        val neededTime = 4f * 1000f // seconds * 1000 = milliseconds
 
         var lastClosestNeededHue by remember { mutableStateOf(0f) }
         var closestNeededHue by remember { mutableStateOf(0f) }
@@ -310,9 +311,8 @@ fun CameraGame(onNavigateBack: () -> Unit) {
             { newColor ->
                 //currentCount = 4
                 val margin = 15.0f
-                val neededTime = 4f * 1000f // seconds * 1000 = milliseconds
-                val currentTime = java.util.Date().time
 
+                val currentTime = java.util.Date().time
 
 
                 currentColor = ColorUI(newColor)
@@ -474,7 +474,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                 val currentHue = rgbToHue(currentColor.red, currentColor.green, currentColor.blue)
                 for (color in neededColors) {
                     val hue = rgbToHue(color.red, color.green, color.blue)
-                    Text(text = "#### ${color.red}, ${color.green}, ${color.blue}", fontSize = 12.sp, color = color)
+                    //Text(text = "#### ${color.red}, ${color.green}, ${color.blue}", fontSize = 12.sp, color = color)
                     Text(text = "#### hue: ${hue}, diff:${degDiff(hue, currentHue)}", fontSize = 12.sp, color = hueToRgb(hue))
                     Spacer(modifier = Modifier.height(4.dp))
                     // color box
@@ -491,8 +491,9 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                     fontSize = 16.sp,
                     color = onlyColor
                 )
-                Text(text = "hue: $currentHue, ${java.util.Date().time - firstOnColorTime}", fontSize = 16.sp, color = onlyColor)
-                Text(text = "closestNeededHue: $closestNeededHue", fontSize = 16.sp, color = onlyColor)
+                Text(text = "hue: $currentHue", fontSize = 16.sp, color = hueToRgb(currentHue))
+                Text(text = "Hold for: ${(neededTime - (java.util.Date().time - firstOnColorTime))/1000} seconds", fontSize = 16.sp)
+                //Text(text = "closestNeededHue: $closestNeededHue", fontSize = 16.sp, color = onlyColor)
 
                 Text(text = "Count: $currentCount/$neededCount", fontSize = 32.sp)
                 Spacer(modifier = Modifier.height(24.dp))
