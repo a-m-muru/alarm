@@ -49,7 +49,7 @@ fun JumpingJacks(onNavigateBack: () -> Unit) {
 
     //
     var currentCount by remember { mutableStateOf(0) }
-    val neededCount = 4
+    val neededCount = 16
     val neededAcceleration = 30
     val victory by remember { mutableStateOf(false) }
 
