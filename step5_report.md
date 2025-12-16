@@ -7,7 +7,7 @@ You set the alarm, the alarm rings until you complete the game, then you can dis
 ## Features
 * alarm clock
   * create/edit/delete alarms
-  * select on witch days alarm rings
+  * select on which days alarm rings
   * select at what time alarm rings
   * activate/disable alarms
 * 4 games
@@ -24,5 +24,6 @@ You set the alarm, the alarm rings until you complete the game, then you can dis
 * Proto Datastore
 
 ## Limitations and improvements
+* uses media volume not alarm volume
 
 ## Demo video
