@@ -50,7 +50,7 @@ import java.util.Calendar
 
 class AlarmActivity : ComponentActivity() {
     companion object {
-        const val MAX_MINIGAMES = 5 // == 1 + maximum minigame id
+        const val MAX_MINIGAMES = 6 // == 1 + maximum minigame id
     }
 
     private fun isDarkModeOn(): Boolean {
