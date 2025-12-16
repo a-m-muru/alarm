@@ -184,7 +184,7 @@ class AlarmActivity : ComponentActivity() {
         val navback = { end() }
 
 
-        when (5) {
+        when (id) {
             0 -> JumpingJacks(onNavigateBack = navback)
             1 -> JumpingJacks(onNavigateBack = navback)
             2 -> GoIntoTheLight(onNavigateBack = navback)
