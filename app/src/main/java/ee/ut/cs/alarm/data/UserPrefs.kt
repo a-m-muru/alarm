@@ -25,29 +25,31 @@ data class UserPrefs(
     val prevStreakCount: Int,
     val lastMinigameTs: Long
 ) {
-    fun fromProto(proto: UserPrefsProto): UserPrefs {
-        return UserPrefs(
-            id = UUID.fromString(proto.id),
-            allowedTracks = proto.allowedTracksList.map { value ->
-                when (value) {
-                    AlarmTrackProto.ALARM_TRACK_1 -> AlarmTrack.ALARM_TRACK_1
-                    AlarmTrackProto.ALARM_TRACK_2 -> AlarmTrack.ALARM_TRACK_2
-                    AlarmTrackProto.ALARM_TRACK_3 -> AlarmTrack.ALARM_TRACK_3
-                    AlarmTrackProto.UNRECOGNIZED -> AlarmTrack.ALARM_TRACK_1
-                }
-            },
-            allowedGames = proto.allowedGamesList.map { value ->
-                when (value) {
-                    AlarmGameProto.ALARM_GAME_BALANCE_HOLE -> AlarmGame.ALARM_GAME_BALANCE_HOLE
-                    AlarmGameProto.ALARM_GAME_GO_INTO_THE_LIGHT -> AlarmGame.ALARM_GAME_GO_INTO_THE_LIGHT
-                    AlarmGameProto.ALARM_GAME_JUMPING_JACKS -> AlarmGame.ALARM_GAME_JUMPING_JACKS
-                    AlarmGameProto.UNRECOGNIZED -> AlarmGame.ALARM_GAME_BALANCE_HOLE
-                }
-            },
-            streakCount = proto.streakCount,
-            prevStreakCount = proto.prevStreakCount,
-            lastMinigameTs = proto.lastMinigameTs
-        )
+    companion object {
+        fun fromProto(proto: UserPrefsProto): UserPrefs {
+            return UserPrefs(
+                id = UUID.fromString(proto.id),
+                allowedTracks = proto.allowedTracksList.map { value ->
+                    when (value) {
+                        AlarmTrackProto.ALARM_TRACK_1 -> AlarmTrack.ALARM_TRACK_1
+                        AlarmTrackProto.ALARM_TRACK_2 -> AlarmTrack.ALARM_TRACK_2
+                        AlarmTrackProto.ALARM_TRACK_3 -> AlarmTrack.ALARM_TRACK_3
+                        AlarmTrackProto.UNRECOGNIZED -> AlarmTrack.ALARM_TRACK_1
+                    }
+                },
+                allowedGames = proto.allowedGamesList.map { value ->
+                    when (value) {
+                        AlarmGameProto.ALARM_GAME_BALANCE_HOLE -> AlarmGame.ALARM_GAME_BALANCE_HOLE
+                        AlarmGameProto.ALARM_GAME_GO_INTO_THE_LIGHT -> AlarmGame.ALARM_GAME_GO_INTO_THE_LIGHT
+                        AlarmGameProto.ALARM_GAME_JUMPING_JACKS -> AlarmGame.ALARM_GAME_JUMPING_JACKS
+                        AlarmGameProto.UNRECOGNIZED -> AlarmGame.ALARM_GAME_BALANCE_HOLE
+                    }
+                },
+                streakCount = proto.streakCount,
+                prevStreakCount = proto.prevStreakCount,
+                lastMinigameTs = proto.lastMinigameTs
+            )
+        }
     }
 
     fun toProto(): UserPrefsProto {
