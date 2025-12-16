@@ -52,8 +52,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.LaunchedEffect
 import ee.ut.cs.alarm.Vec3
-import java.time.LocalDateTime
-import java.util.List.copyOf
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -85,9 +83,12 @@ class CenterPixelAnalyzer(
 
 
         // Calculate the index for the center pixel
-        val centerRowStart = centerY * rowStride
-        val centerPixelOffset = centerX * bytesPerPixel
-        val pixelIndex = centerRowStart + centerPixelOffset
+        //val centerRowStart = centerY * rowStride
+        //val centerPixelOffset = centerX * bytesPerPixel
+        //val pixelIndex = centerRowStart + centerPixelOffset
+
+        val pixelStride = plane.pixelStride
+        val pixelIndex = centerY * rowStride + centerX * pixelStride
 
         var detectedColor: Int? = null
 
@@ -130,9 +131,13 @@ fun rgbToHue(red: Float, green: Float, blue: Float) : Float{
 
     val c = max - min
 
+    if (c == 0f){
+        return 0f
+    }
+
     if (red > green && red > blue){
         // x/red is max
-        hue = abs(((green - blue)/c)) % 6
+        hue = ((green - blue)/c).mod(6f)
     } else if (green > red && green > blue){
         // y/green is max
         hue = 2 + (blue - red)/c
@@ -164,9 +169,13 @@ fun hueToRgb(hue: Float): ColorUI {
 // differenc in degrees
 fun degDiff(deg1: Float, deg2: Float): Float{
     var a = deg1 - deg2
-    a = abs(((a + 180) % 360) - 180)
+    if (a > 180){
+        a-= 360
+    } else if (a < -180){
+        a += 360
+    }
 
-    return a
+    return abs(a)
 
 }
 
@@ -177,6 +186,21 @@ fun generateRandomColorVec3(): Vec3 {
     val blue = (0..255).random().toFloat() / 255.0f
 
     return Vec3(red, green, blue)
+}
+
+// Returns the hue of the color that has the closest distance to the given hue
+fun closestHue(hue: Float, colors: List<ColorUI>): Pair<Float, Int> {
+    var closestHue = 180f
+    var closestIndex = -1
+    for (i in colors.indices) {
+        val color = colors[i]
+        val colorHue = rgbToHue(color.red, color.green, color.blue)
+        if (degDiff(hue, colorHue) < degDiff(hue, closestHue)){
+            closestHue = colorHue
+            closestIndex = i
+        }
+    }
+    return Pair(closestHue, closestIndex)
 }
 
 @Composable
@@ -218,7 +242,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         // game state
         var currentCount by remember { mutableStateOf(0) }
 
-        val neededCount = 8
+        val neededCount = 4
 
         val minDiff = 360.0f/(neededCount.toFloat()+1f)
 
@@ -273,43 +297,52 @@ fun CameraGame(onNavigateBack: () -> Unit) {
 
         var firstOnColorTime by remember { mutableStateOf(0L) }
 
+        var lastClosestNeededHue by remember { mutableStateOf(0f) }
+        var closestNeededHue by remember { mutableStateOf(0f) }
+
+        val mercyFrames = 5
+        var currentMercyFrames by remember { mutableStateOf(0) }
+        var mercyCounting by remember { mutableStateOf(false) }
+
+
 
         val onColorDetected: (Int) -> Unit = remember {
             { newColor ->
                 //currentCount = 4
-                val margin = 10.0f
-                val neededTime = 2f * 1000f // seconds * 1000 = milliseconds
+                val margin = 15.0f
+                val neededTime = 4f * 1000f // seconds * 1000 = milliseconds
                 val currentTime = java.util.Date().time
-                val mercyFrames = 3
-                var currentMercyFrames = 0
 
-                var mercyCounting = false
 
 
                 currentColor = ColorUI(newColor)
 
                 val hue = rgbToHue(currentColor.red, currentColor.green, currentColor.blue)
 
+                val (closestHue, closestIndex) = closestHue(hue, neededColors)
+                closestNeededHue = closestHue
 
-                for (colorOther in neededColors) {
+
+                for (i in 0 until neededColors.size) {
+                    val colorOther = neededColors[i]
 
                     val hueOther = rgbToHue(colorOther.red, colorOther.green, colorOther.blue)
-
 
                     if (currentTime - firstOnColorTime > neededTime && firstOnColorTime != 0L){ // if time has passed, good
                         firstOnColorTime = 0L
                         mercyCounting = false
                         currentCount++
                         AudioPlayer.playSound(context, R.raw.good)
-                        neededColors.remove(colorOther)
+                        neededColors.removeAt(closestIndex)
                         break
                     }
 
-                    // if color is close to current color, start counting
+                    // if color is close to current color, save time and start counting
                     if (degDiff(hue, hueOther) < margin) {
 
                         currentMercyFrames = 0
                         mercyCounting = true
+
 
                         if (firstOnColorTime == 0L){ // if first time, save first time
                             firstOnColorTime = currentTime
@@ -319,7 +352,8 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                         if (mercyCounting) {
                             currentMercyFrames++
                         }
-                        if (currentMercyFrames > mercyFrames) {
+
+                        if (currentMercyFrames > mercyFrames) { // reset mercy
                             firstOnColorTime = 0L
                             currentMercyFrames = 0
                             mercyCounting = false
@@ -441,8 +475,8 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                 for (color in neededColors) {
                     val hue = rgbToHue(color.red, color.green, color.blue)
                     Text(text = "#### ${color.red}, ${color.green}, ${color.blue}", fontSize = 12.sp, color = color)
-                    Text(text = "#### hue: ${hue}, diff:${degDiff(hue, currentHue)}", fontSize = 12.sp, color = color)
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(text = "#### hue: ${hue}, diff:${degDiff(hue, currentHue)}", fontSize = 12.sp, color = hueToRgb(hue))
+                    Spacer(modifier = Modifier.height(4.dp))
                     // color box
 
                 }
@@ -458,6 +492,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                     color = onlyColor
                 )
                 Text(text = "hue: $currentHue, ${java.util.Date().time - firstOnColorTime}", fontSize = 16.sp, color = onlyColor)
+                Text(text = "closestNeededHue: $closestNeededHue", fontSize = 16.sp, color = onlyColor)
 
                 Text(text = "Count: $currentCount/$neededCount", fontSize = 32.sp)
                 Spacer(modifier = Modifier.height(24.dp))
