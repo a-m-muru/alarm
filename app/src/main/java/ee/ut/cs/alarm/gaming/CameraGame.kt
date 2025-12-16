@@ -19,14 +19,20 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowColumn
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -57,6 +64,9 @@ import androidx.compose.ui.graphics.Color as ColorUI
 private val cameraExecutor = Executors.newSingleThreadExecutor()
 private val handler = Handler(Looper.getMainLooper())
 
+/**
+ * Analyzer that extracts RGB values from a single image plane
+ */
 class CenterPixelAnalyzer(
     private val onColorDetected: (Int) -> Unit,
 ) : ImageAnalysis.Analyzer {
@@ -112,8 +122,12 @@ class CenterPixelAnalyzer(
     }
 }
 
-/*
-returns hue in range 0-360
+/**
+ * Converts RGB values in range (0,1) to Hue in degrees
+ * @param red red value
+ * @param green green value
+ * @param blue blue value
+ * @return hue value
  */
 fun rgbToHue(
     red: Float,
@@ -144,17 +158,27 @@ fun rgbToHue(
     return hue * 60
 }
 
+/**
+ * helping function for rgbToHue
+ */
 fun hueFunK(
     n: Float,
     hue: Float,
 ): Float = (n + (hue / 60)) % 6
 
+/**
+ * helping function for rgbToHue
+ */
 fun hueFunF(
     n: Float,
     hue: Float,
 ): Float = 1 - max(0f, min(hueFunK(n, hue), 4f - hueFunK(n, hue)))
 
-// returns color in range 0-1
+/**
+ * Converts Hue in degrees to ColorUI object
+ * @param hue hue value
+ * @return ColorUI object with RGB values
+ */
 fun hueToRgb(hue: Float): ColorUI {
     val red: Float = hueFunF(5f, hue)
     val green: Float = hueFunF(3f, hue)
@@ -163,7 +187,12 @@ fun hueToRgb(hue: Float): ColorUI {
     return ColorUI(red, green, blue)
 }
 
-// differenc in degrees
+/**
+ * Calculates the difference between two hues in degrees
+ * @param deg1 first hue
+ * @param deg2 second hue
+ * @return difference between the two hues
+ */
 fun degDiff(
     deg1: Float,
     deg2: Float,
@@ -178,6 +207,9 @@ fun degDiff(
     return abs(a)
 }
 
+/**
+ * Generates a random color in RGB values
+ */
 fun generateRandomColorVec3(): Vec3 {
     val red = (0..255).random().toFloat() / 255.0f
     val green = (0..255).random().toFloat() / 255.0f
@@ -187,11 +219,17 @@ fun generateRandomColorVec3(): Vec3 {
 }
 
 // Returns the hue of the color that has the closest distance to the given hue
+/**
+ * Finds the closest hue in a list of colors
+ * @param hue hue value
+ * @param colors list of colors
+ * @return pair of the closest hue and the index of the color in the list
+ */
 fun closestHue(
     hue: Float,
     colors: List<ColorUI>,
 ): Pair<Float, Int> {
-    var closestHue = 180f
+    var closestHue = 181f
     var closestIndex = -1
     for (i in colors.indices) {
         val color = colors[i]
@@ -204,6 +242,18 @@ fun closestHue(
     return Pair(closestHue, closestIndex)
 }
 
+/**
+ * Inverts the hue of a color
+ * @param hue hue value
+ * @return inverted hue value
+ */
+fun inverseHue(hue: Float): Float {
+    return (hue + 180) % 360
+}
+
+/**
+ * Camera Game
+ */
 @Composable
 fun CameraGame(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
@@ -262,27 +312,6 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                         currentHue -= 360
                     }
 
-                    /*
-                    //val randomColorVec3 = Vec3(randomColor.red, randomColor.green, randomColor.blue).normalize()
-                    if (neededColors.isEmpty()){
-                        neededColors.add(ColorUI(randomColor.red, randomColor.green, randomColor.blue))
-                        continue
-                    }
-
-
-
-                    val hue = rgbToHue(randomColor.red, randomColor.green, randomColor.blue)
-
-                    for (otherColor in copyOf(neededColors)) {
-                        //val otherColorVec3 = Vec3(otherColor.red, otherColor.green, otherColor.blue).normalize()
-                        // cant have colors too similar
-                        val hueOther = rgbToHue(otherColor.red, otherColor.green, otherColor.blue)
-
-                        if (degDiff(hue, hueOther) > minDiff){
-                            neededColors.add(ColorUI(randomColor.red, randomColor.green, randomColor.blue))
-                            break
-                        }
-                    }*/
                 }
                 neededColors
             }
@@ -296,15 +325,18 @@ fun CameraGame(onNavigateBack: () -> Unit) {
         var lastClosestNeededHue by remember { mutableStateOf(0f) }
         var closestNeededHue by remember { mutableStateOf(0f) }
 
+        var closestIndexMercy by remember { mutableStateOf(-1) }
+
+
         val mercyFrames = 5
         var currentMercyFrames by remember { mutableStateOf(0) }
         var mercyCounting by remember { mutableStateOf(false) }
 
+        val margin = 20.0f
+
         val onColorDetected: (Int) -> Unit =
             remember {
                 { newColor ->
-                    // currentCount = 4
-                    val margin = 15.0f
 
                     val currentTime = java.util.Date().time
 
@@ -323,9 +355,10 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                         if (currentTime - firstOnColorTime > neededTime && firstOnColorTime != 0L) { // if time has passed, good
                             firstOnColorTime = 0L
                             mercyCounting = false
-                            currentCount++
-                            AudioPlayer.playSound(context, R.raw.good)
-                            neededColors.removeAt(closestIndex)
+                            if (closestIndexMercy != -1)
+                                currentCount++
+                                AudioPlayer.playSound(context, R.raw.good)
+                                neededColors.removeAt(closestIndexMercy)
                             break
                         }
 
@@ -336,6 +369,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
 
                             if (firstOnColorTime == 0L) { // if first time, save first time
                                 firstOnColorTime = currentTime
+                                closestIndexMercy = closestIndex
                             }
                         } else { // if not correct, reset firstOnColorTime
                             if (mercyCounting) {
@@ -346,19 +380,21 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                                 firstOnColorTime = 0L
                                 currentMercyFrames = 0
                                 mercyCounting = false
+                                closestIndexMercy = -1
                             }
                         }
                     }
                 }
             }
 
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
             // Camera Preview
             Box(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .weight(1f),
+                        //.weight(1f)
+                        .clipToBounds(),
             ) {
                 AndroidView(
                     factory = { ctx ->
@@ -412,17 +448,18 @@ fun CameraGame(onNavigateBack: () -> Unit) {
 
                         previewView // Return the created view
                     },
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier.matchParentSize(),
                 )
 
-                // OPTIONAL: Draw a center target (crosshair) over the camera view
-                Canvas(modifier = Modifier.fillMaxSize()) {
-                    val strokeWidth = 5.dp.toPx()
+                // Draw a center target (crosshair) over the camera view
+                // Spacer(modifier = Modifier.height(120.dp))
+                Canvas(modifier = Modifier.matchParentSize()) {
+                    val strokeWidth = 3.dp.toPx()
                     val targetSize = 20.dp.toPx()
                     val center = Offset(size.width / 2f, size.height / 2f)
 
                     // Draw a crosshair or circle for the center
-                    drawCircle(color = ColorUI.White, radius = 4.dp.toPx(), center = center)
+                    drawCircle(color = ColorUI.White, radius = 2.dp.toPx(), center = center)
                     drawLine(
                         ColorUI.White,
                         start = center - Offset(targetSize, 0f),
@@ -448,70 +485,113 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                         strokeWidth = strokeWidth,
                     )
                 }
-            }
+                //Spacer(Modifier.height(120.dp))
 
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(text = "Color Camera", fontSize = 24.sp)
-                Text(
-                    text = "Point your phone towards colors:",
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center,
-                )
-                // display needed colors
-                val currentHue = rgbToHue(currentColor.red, currentColor.green, currentColor.blue)
-                for (color in neededColors) {
-                    val hue = rgbToHue(color.red, color.green, color.blue)
-                    // Text(text = "#### ${color.red}, ${color.green}, ${color.blue}", fontSize = 12.sp, color = color)
+                // text column
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                    //verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(text = "Color Camera", fontSize = 24.sp)
                     Text(
-                        text = "#### hue: $hue, diff:${degDiff(hue, currentHue)}",
-                        fontSize = 12.sp,
-                        color = hueToRgb(hue),
+                        text = "Point your phone towards colors:",
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center,
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    // color box
-                }
+                    Text(text = "you need to be within +-${margin} degrees of the color", fontSize = 16.sp)
 
-                Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(Modifier.height(120.dp))
 
-                // val currentColorVec3Normalized = Vec3(currentColor.red, currentColor.green, currentColor.blue).normalize()
+                    val currentHue =
+                        rgbToHue(currentColor.red, currentColor.green, currentColor.blue)
 
-                val onlyColor = hueToRgb(currentHue)
-                val holdsecs = (neededTime - (java.util.Date().time - firstOnColorTime)) / 1000
-                Text(
-                    text = "Current color (R, G, B)${onlyColor.red}, ${onlyColor.green}, ${onlyColor.blue}",
-                    fontSize = 16.sp,
-                    color = onlyColor,
-                )
-                Text(text = "hue: $currentHue", fontSize = 24.sp, color = hueToRgb(currentHue))
-                Text(
-                    text =
-                        if (holdsecs > 0) {
-                            "Hold for: %.1f seconds".format(holdsecs)
-                        } else {
-                            "Find one of the unsolved colors!"
-                        },
-                    fontSize = 24.sp,
-                )
-                // Text(text = "closestNeededHue: $closestNeededHue", fontSize = 16.sp, color = onlyColor)
+                    // bottom column
+                    FlowRow (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            //.fillMaxHeight()
+                            .padding(top = 32.dp),
+                        //horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Bottom,
+                        //maxItemsInEachRow = 4,
+                        horizontalArrangement = Arrangement.SpaceAround,
+                    ) {
+                        // display needed colors
 
-                Text(text = "Count: $currentCount/$neededCount", fontSize = 32.sp)
-                Spacer(modifier = Modifier.height(24.dp))
-
-                if (currentCount >= neededCount) {
-                    Text(text = "Congratulations! You did it!", fontSize = 24.sp)
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Button(onClick = onNavigateBack) {
-                        Text("Go Back")
+                        for (color in neededColors) {
+                            val hue = rgbToHue(color.red, color.green, color.blue)
+                            // Text(text = "#### ${color.red}, ${color.green}, ${color.blue}", fontSize = 12.sp, color = color)
+                            Text(
+                                text = "#### hue: ${hue.toInt()}, diff:${
+                                    degDiff(
+                                        hue,
+                                        currentHue
+                                    ).toInt()
+                                }",
+                                fontSize = 12.sp,
+                                color = if (degDiff(hue, 60f) > degDiff(
+                                        hue,
+                                        240f
+                                    )
+                                ) ColorUI.White else ColorUI.Black,
+                                modifier = Modifier.background(hueToRgb(hue)),
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            // color box
+                        }
                     }
+
+                    Spacer(modifier = Modifier.height(32.dp))
+
+                    // val currentColorVec3Normalized = Vec3(currentColor.red, currentColor.green, currentColor.blue).normalize()
+
+                    val onlyColor = hueToRgb(currentHue)
+                    val holdsecs =
+                        (neededTime - (java.util.Date().time - firstOnColorTime)) / 1000
+                    Text(
+                        text = "Current color (R, G, B)${onlyColor.red}, ${onlyColor.green}, ${onlyColor.blue}",
+                        fontSize = 16.sp,
+                        color = onlyColor,
+                    )
+                    Text(
+                        text = "hue: ${currentHue.toInt()}",
+                        fontSize = 24.sp,
+                        color = if (degDiff(currentHue, 60f) > degDiff(
+                                currentHue,
+                                240f
+                            )
+                        ) ColorUI.White else ColorUI.Black,
+                        modifier = Modifier.background(hueToRgb(currentHue)),
+                    )
+                    Text(
+                        text =
+                            if (holdsecs > 0) {
+                                "Hold for: %.1f seconds".format(holdsecs)
+                            } else {
+                                "Find one of the unsolved colors!"
+                            },
+                        fontSize = 24.sp,
+                    )
+                    // Text(text = "closestNeededHue: $closestNeededHue", fontSize = 16.sp, color = onlyColor)
+
                 }
             }
+
+            Text(text = "Count: $currentCount/$neededCount", fontSize = 32.sp)
+            Spacer(modifier = Modifier.height(24.dp))
+
+            if (currentCount >= neededCount) {
+                Text(text = "Congratulations! You did it!", fontSize = 24.sp)
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(onClick = onNavigateBack) {
+                    Text("Go Back")
+                }
+            }
+
         }
     } else {
         // Fallback UI if permission is denied
@@ -527,10 +607,6 @@ fun CameraGame(onNavigateBack: () -> Unit) {
             Button(onClick = {
                 // This launches the system dialog
                 launcher.launch(Manifest.permission.CAMERA)
-
-                // Logic: If this button is clicked and launcher does NOT show a dialog
-                // (because of permanent denial), the user stays on this screen.
-                // We can add a "Open Settings" button as a fallback.
             }) {
                 Text("Grant Permission")
             }
@@ -538,7 +614,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(onClick = {
-                // Open System Settings (The only way to fix "Don't ask again")
+                // Open System Settings
                 val intent =
                     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", context.packageName, null)
