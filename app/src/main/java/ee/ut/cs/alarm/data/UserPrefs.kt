@@ -5,13 +5,13 @@ import ee.ut.cs.alarm.data.proto.UserPrefs as UserPrefsProto
 import ee.ut.cs.alarm.data.proto.AlarmTrack as AlarmTrackProto
 import ee.ut.cs.alarm.data.proto.AlarmGame as AlarmGameProto
 
-enum class AlarmTrack(name: String) {
+enum class AlarmTrack(val value: String) {
     ALARM_TRACK_1("Ringtone 1"),
     ALARM_TRACK_2("Ringtone 2"),
     ALARM_TRACK_3("Ringtone 3")
 }
 
-enum class AlarmGame(name: String) {
+enum class AlarmGame(val value: String) {
     ALARM_GAME_BALANCE_HOLE("Balance Hole"),
     ALARM_GAME_GO_INTO_THE_LIGHT("Go Into the Light"),
     ALARM_GAME_JUMPING_JACKS("Jumping Jacks")
@@ -19,14 +19,17 @@ enum class AlarmGame(name: String) {
 
 data class UserPrefs(
     val id: UUID = UUID.randomUUID(),
-    val allowedTracks: List<AlarmTrack> = listOf(),
-    val allowedGames: List<AlarmGame> = listOf(),
-    val streakCount: Int,
-    val prevStreakCount: Int,
-    val lastMinigameTs: Long
+    val allowedTracks: List<AlarmTrack> = listOf(AlarmTrack.ALARM_TRACK_1, AlarmTrack.ALARM_TRACK_2, AlarmTrack.ALARM_TRACK_3),
+    val allowedGames: List<AlarmGame> = listOf(AlarmGame.ALARM_GAME_BALANCE_HOLE, AlarmGame.ALARM_GAME_JUMPING_JACKS, AlarmGame.ALARM_GAME_GO_INTO_THE_LIGHT),
+    val streakCount: Int = 0,
+    val prevStreakCount: Int = 0,
+    val lastMinigameTs: Long = 0L
 ) {
     companion object {
         fun fromProto(proto: UserPrefsProto): UserPrefs {
+            if (proto.id == "")
+                return UserPrefs()
+
             return UserPrefs(
                 id = UUID.fromString(proto.id),
                 allowedTracks = proto.allowedTracksList.map { value ->
@@ -59,19 +62,20 @@ data class UserPrefs(
             .setPrevStreakCount(prevStreakCount)
             .setLastMinigameTs(lastMinigameTs)
 
+
         for (i in 0..<allowedTracks.size) {
-            when (allowedTracks.get(i)) {
-                AlarmTrack.ALARM_TRACK_1 -> builder.setAllowedTracks(i, AlarmTrackProto.ALARM_TRACK_1)
-                AlarmTrack.ALARM_TRACK_2 -> builder.setAllowedTracks(i, AlarmTrackProto.ALARM_TRACK_2)
-                AlarmTrack.ALARM_TRACK_3 -> builder.setAllowedTracks(i, AlarmTrackProto.ALARM_TRACK_3)
+            when (allowedTracks[i]) {
+                AlarmTrack.ALARM_TRACK_1 -> builder.addAllowedTracks(AlarmTrackProto.ALARM_TRACK_1)
+                AlarmTrack.ALARM_TRACK_2 -> builder.addAllowedTracks(AlarmTrackProto.ALARM_TRACK_2)
+                AlarmTrack.ALARM_TRACK_3 -> builder.addAllowedTracks(AlarmTrackProto.ALARM_TRACK_3)
             }
         }
 
         for (i in 0..<allowedGames.size) {
-            when (allowedGames.get(i)) {
-                AlarmGame.ALARM_GAME_BALANCE_HOLE -> builder.setAllowedGames(i, AlarmGameProto.ALARM_GAME_BALANCE_HOLE)
-                AlarmGame.ALARM_GAME_GO_INTO_THE_LIGHT -> builder.setAllowedGames(i, AlarmGameProto.ALARM_GAME_GO_INTO_THE_LIGHT)
-                AlarmGame.ALARM_GAME_JUMPING_JACKS -> builder.setAllowedGames(i, AlarmGameProto.ALARM_GAME_JUMPING_JACKS)
+            when (allowedGames[i]) {
+                AlarmGame.ALARM_GAME_BALANCE_HOLE -> builder.addAllowedGames(AlarmGameProto.ALARM_GAME_BALANCE_HOLE)
+                AlarmGame.ALARM_GAME_GO_INTO_THE_LIGHT -> builder.addAllowedGames(AlarmGameProto.ALARM_GAME_GO_INTO_THE_LIGHT)
+                AlarmGame.ALARM_GAME_JUMPING_JACKS -> builder.addAllowedGames(AlarmGameProto.ALARM_GAME_JUMPING_JACKS)
             }
         }
 
