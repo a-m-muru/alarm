@@ -86,6 +86,7 @@ class AlarmActivity : ComponentActivity() {
 
         val serviceIntent = Intent(this, AlarmForegroundService::class.java)
         serviceIntent.setAction(ACTION_STOP_VIBRATION)
+        Log.d("ALARM ACTIVITY", "sending stop vibration action intent")
         startService(serviceIntent)
 
         enableEdgeToEdge()
@@ -102,8 +103,9 @@ class AlarmActivity : ComponentActivity() {
         val serviceIntent = Intent(this, AlarmForegroundService::class.java)
         AlarmApplication.singletonAlarm = null
         AlarmApplication.singletonMinigameId = null
+        Log.d("ALARM ACTIVITY", "sending stop alarm action intent")
         serviceIntent.setAction(ACTION_STOP_ALARM) // Set the action to stop the alarm
-        stopService(serviceIntent) // Stop the service
+        startService(serviceIntent) // Stop the service
         finish()
     }
 

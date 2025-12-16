@@ -11,6 +11,7 @@ class AlarmApplication : Application() {
         // its nulled when the alarm is stopped
         var singletonAlarm: Alarm? = null
         var singletonMinigameId: Int? = null // similar story with this
+        var singletonStreak: Int? = null // saving the streak in memory
     }
 
     lateinit var repo: AlarmRepository
