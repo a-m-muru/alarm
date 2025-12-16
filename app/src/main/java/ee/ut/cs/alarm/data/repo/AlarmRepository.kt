@@ -38,17 +38,23 @@ interface AlarmRepository {
 
     suspend fun getAlarmByID(alarmID: UUID): Alarm?
 
-    fun streakFlow(): Flow<Int>
+    fun streakFlow(): Flow<Int> // gpt
 
-    fun previousStreakFlow(): Flow<Int>
+    fun previousStreakFlow(): Flow<Int> // gpt
 
-    suspend fun getStreak(): Int
+    suspend fun getStreak(): Int // gpt
 
-    suspend fun setStreak(to: Int)
+    suspend fun setStreak(to: Int) // gpt
 
-    suspend fun getPreviousStreak(): Int
+    suspend fun getPreviousStreak(): Int // gpt
 
-    suspend fun setPreviousStreak(to: Int)
+    suspend fun setPreviousStreak(to: Int) // gpt
+
+    suspend fun getLastStreakDay(): Int // gpt
+
+    suspend fun setLastStreakDay(dayInt: Int) // gpt
+
+    fun lastStreakDayFlow(): kotlinx.coroutines.flow.Flow<Int> // gpt
 }
 
 class AlarmRepositoryImpl private constructor(
@@ -142,7 +148,7 @@ class AlarmRepositoryImpl private constructor(
             meta.streak = to
             current.toBuilder().setMeta(meta).build()
         }
-        //getStreak()
+        // getStreak()
     }
 
     override suspend fun setPreviousStreak(to: Int) {
@@ -152,8 +158,24 @@ class AlarmRepositoryImpl private constructor(
             meta.previousStreak = to
             current.toBuilder().setMeta(meta).build()
         }
-        //getPreviousStreak()
+        // getPreviousStreak()
     }
+
+    override suspend fun getLastStreakDay(): Int =
+        context.alarmDataStore.data
+            .map { it.meta?.lastStreakDay ?: 0 }
+            .first()
+
+    override suspend fun setLastStreakDay(dayInt: Int) {
+        context.alarmDataStore.updateData { current ->
+            val metaBuilder = current.meta?.toBuilder() ?: GlobalMeta.newBuilder()
+            metaBuilder.lastStreakDay = dayInt
+            current.toBuilder().setMeta(metaBuilder).build()
+        }
+    }
+
+    override fun lastStreakDayFlow(): Flow<Int> = context.alarmDataStore.data.map { it.meta?.lastStreakDay ?: 0 }
+
     // #endregion CHATGPT
 
     companion object {

@@ -17,6 +17,7 @@ message AlarmProto {
 message GlobalMeta {
   uint32 streak = 1;
   uint32 previous_streak = 2;
+  uint32 last_streak_day = 3;
 }
 
 message AlarmListProto {
