@@ -64,6 +64,9 @@ import androidx.compose.ui.graphics.Color as ColorUI
 private val cameraExecutor = Executors.newSingleThreadExecutor()
 private val handler = Handler(Looper.getMainLooper())
 
+/**
+ * Analyzer that extracts RGB values from a single image plane
+ */
 class CenterPixelAnalyzer(
     private val onColorDetected: (Int) -> Unit,
 ) : ImageAnalysis.Analyzer {
@@ -119,8 +122,12 @@ class CenterPixelAnalyzer(
     }
 }
 
-/*
-returns hue in range 0-360
+/**
+ * Converts RGB values in range (0,1) to Hue in degrees
+ * @param red red value
+ * @param green green value
+ * @param blue blue value
+ * @return hue value
  */
 fun rgbToHue(
     red: Float,
@@ -151,17 +158,27 @@ fun rgbToHue(
     return hue * 60
 }
 
+/**
+ * helping function for rgbToHue
+ */
 fun hueFunK(
     n: Float,
     hue: Float,
 ): Float = (n + (hue / 60)) % 6
 
+/**
+ * helping function for rgbToHue
+ */
 fun hueFunF(
     n: Float,
     hue: Float,
 ): Float = 1 - max(0f, min(hueFunK(n, hue), 4f - hueFunK(n, hue)))
 
-// returns color in range 0-1
+/**
+ * Converts Hue in degrees to ColorUI object
+ * @param hue hue value
+ * @return ColorUI object with RGB values
+ */
 fun hueToRgb(hue: Float): ColorUI {
     val red: Float = hueFunF(5f, hue)
     val green: Float = hueFunF(3f, hue)
@@ -170,7 +187,12 @@ fun hueToRgb(hue: Float): ColorUI {
     return ColorUI(red, green, blue)
 }
 
-// differenc in degrees
+/**
+ * Calculates the difference between two hues in degrees
+ * @param deg1 first hue
+ * @param deg2 second hue
+ * @return difference between the two hues
+ */
 fun degDiff(
     deg1: Float,
     deg2: Float,
@@ -185,6 +207,9 @@ fun degDiff(
     return abs(a)
 }
 
+/**
+ * Generates a random color in RGB values
+ */
 fun generateRandomColorVec3(): Vec3 {
     val red = (0..255).random().toFloat() / 255.0f
     val green = (0..255).random().toFloat() / 255.0f
@@ -194,6 +219,12 @@ fun generateRandomColorVec3(): Vec3 {
 }
 
 // Returns the hue of the color that has the closest distance to the given hue
+/**
+ * Finds the closest hue in a list of colors
+ * @param hue hue value
+ * @param colors list of colors
+ * @return pair of the closest hue and the index of the color in the list
+ */
 fun closestHue(
     hue: Float,
     colors: List<ColorUI>,
@@ -211,10 +242,18 @@ fun closestHue(
     return Pair(closestHue, closestIndex)
 }
 
+/**
+ * Inverts the hue of a color
+ * @param hue hue value
+ * @return inverted hue value
+ */
 fun inverseHue(hue: Float): Float {
     return (hue + 180) % 360
 }
 
+/**
+ * Camera Game
+ */
 @Composable
 fun CameraGame(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
@@ -273,27 +312,6 @@ fun CameraGame(onNavigateBack: () -> Unit) {
                         currentHue -= 360
                     }
 
-                    /*
-                    //val randomColorVec3 = Vec3(randomColor.red, randomColor.green, randomColor.blue).normalize()
-                    if (neededColors.isEmpty()){
-                        neededColors.add(ColorUI(randomColor.red, randomColor.green, randomColor.blue))
-                        continue
-                    }
-
-
-
-                    val hue = rgbToHue(randomColor.red, randomColor.green, randomColor.blue)
-
-                    for (otherColor in copyOf(neededColors)) {
-                        //val otherColorVec3 = Vec3(otherColor.red, otherColor.green, otherColor.blue).normalize()
-                        // cant have colors too similar
-                        val hueOther = rgbToHue(otherColor.red, otherColor.green, otherColor.blue)
-
-                        if (degDiff(hue, hueOther) > minDiff){
-                            neededColors.add(ColorUI(randomColor.red, randomColor.green, randomColor.blue))
-                            break
-                        }
-                    }*/
                 }
                 neededColors
             }
@@ -589,10 +607,6 @@ fun CameraGame(onNavigateBack: () -> Unit) {
             Button(onClick = {
                 // This launches the system dialog
                 launcher.launch(Manifest.permission.CAMERA)
-
-                // Logic: If this button is clicked and launcher does NOT show a dialog
-                // (because of permanent denial), the user stays on this screen.
-                // We can add a "Open Settings" button as a fallback.
             }) {
                 Text("Grant Permission")
             }
@@ -600,7 +614,7 @@ fun CameraGame(onNavigateBack: () -> Unit) {
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(onClick = {
-                // Open System Settings (The only way to fix "Don't ask again")
+                // Open System Settings
                 val intent =
                     Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", context.packageName, null)
