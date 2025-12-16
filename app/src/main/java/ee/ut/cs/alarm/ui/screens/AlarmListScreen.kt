@@ -6,14 +6,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -53,6 +58,8 @@ fun AlarmListScreen(
     alarmScheduler: AlarmScheduler,
 ) {
     val alarms by vm.items.collectAsState()
+    val streak by vm.streak.collectAsState()
+    val prevStreak by vm.previousStreak.collectAsState()
     val context = LocalContext.current
 
     /**
@@ -82,13 +89,19 @@ fun AlarmListScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AlarmTopBar(onNavigate)
+            AlarmTopBar(onNavigate, vm)
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    editableAlarm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) Alarm(time = LocalTime.now().toSecondOfDay().toUInt() + 60u)
-                    else Alarm(time = System.currentTimeMillis().toUInt() / 1000u % (24u * 3600u) + 60u)
+                    editableAlarm =
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            Alarm(time = LocalTime.now().toSecondOfDay().toUInt() + 60u)
+                        } else {
+                            Alarm(
+                                time = System.currentTimeMillis().toUInt() / 1000u % (24u * 3600u) + 60u,
+                            )
+                        }
                     showDialog = true
                 },
             ) {
@@ -102,7 +115,7 @@ fun AlarmListScreen(
                     .fillMaxSize()
                     .padding(padding),
         ) {
-            StreakBox()
+            StreakBox(streak, prevStreak)
             if (alarms.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -129,7 +142,7 @@ fun AlarmListScreen(
                             alarm = alarm,
                             cardToggled = { enabled ->
                                 val al = alarm.copy(enabled = enabled)
-                                vm.updateItem(al)
+                                vm.updateAlarm(al)
                                 if (enabled) {
                                     val secondsToAlarm = alarmScheduler.scheduleAlarm(al)
                                     showTimeTillAlarmToast(secondsToAlarm)
@@ -157,7 +170,7 @@ fun AlarmListScreen(
                     onSaveRequest = { alarmToSave ->
                         if (vm.hasAlarm(alarmToSave)) {
                             alarmScheduler.cancelAlarm(alarmToSave.id)
-                            vm.updateItem(alarmToSave)
+                            vm.updateAlarm(alarmToSave)
                         } else {
                             vm.addAlarm(alarmToSave)
                         }
@@ -172,16 +185,43 @@ fun AlarmListScreen(
     }
 }
 
+// thanks chat geepeetee
 @Composable
-fun StreakBox() {
-    Box(modifier = Modifier.fillMaxWidth().background(Color.Red).height(30.dp)) {
-        Row { Text("Streak") }
+fun StreakBox(
+    streak: Int,
+    previousStreak: Int,
+    modifier: Modifier = Modifier
+) {
+    val increased = streak > previousStreak
+    val color = when {
+        increased -> Color(0xFF4CAF50) // green
+        streak == previousStreak -> Color(0xFF2196F3) // blue
+        else -> Color(0xFFF44336) // red
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(56.dp)
+            .background(color = color, shape = RoundedCornerShape(8.dp))
+            .padding(horizontal = 16.dp),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = "Streak: $streak", color = Color.White, style = MaterialTheme.typography.headlineSmall)
+            Spacer(modifier = Modifier.width(12.dp))
+            if (increased) {
+                Icon(Icons.Default.KeyboardArrowUp, contentDescription = "Increased", tint = Color.White)
+            } else if (streak < previousStreak) {
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Decreased", tint = Color.White)
+            }
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AlarmTopBar(onNavigate: (String) -> Unit) {
+fun AlarmTopBar(onNavigate: (String) -> Unit, vm: AlarmListViewModel) {
     var expanded by remember { mutableStateOf(false) }
 
     TopAppBar(

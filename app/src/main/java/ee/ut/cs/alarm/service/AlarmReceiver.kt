@@ -8,6 +8,8 @@ import android.content.Intent
 import android.os.Build
 import android.util.Log
 import androidx.core.content.ContextCompat
+import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_ALARM
+import ee.ut.cs.alarm.ALARM_INTENT_EXTRA_MINIGAME_ID
 import ee.ut.cs.alarm.AlarmActivity
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
@@ -22,11 +24,12 @@ class AlarmReceiver : BroadcastReceiver() {
         context: Context,
         intent: Intent,
     ) {
-        val alarm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra("ut.cs.alarm.alarm", Alarm::class.java)
-        } else {
-            intent.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
-        }
+        val alarm =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra("ut.cs.alarm.alarm", Alarm::class.java)
+            } else {
+                intent.getParcelableExtra<Alarm>("ut.cs.alarm.alarm")
+            }
         if (alarm == null) {
             Log.e("ALARM RECEIVER", "alarm was null!! stopping anything")
             return
@@ -50,24 +53,23 @@ class AlarmReceiver : BroadcastReceiver() {
             }
         }
 
-
         val alarmIntent = Intent(context, AlarmActivity::class.java)
-        alarmIntent.putExtra("ut.cs.alarm.alarm", alarm)
+        alarmIntent.putExtra(ALARM_INTENT_EXTRA_ALARM, alarm)
         alarmIntent.putExtra(
-            "ut.cs.alarm.minigameId",
+            ALARM_INTENT_EXTRA_MINIGAME_ID,
             Random.nextInt(AlarmActivity.MAX_MINIGAMES),
         )
         Log.d(
             "ALARM RECEIVER",
-            "set intent extra to " + alarmIntent.getIntExtra("ut.cs.alarm.minigameId", -2),
+            "set intent extra to " + alarmIntent.getIntExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, -2),
         )
         alarmIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
 
         val serviceIntent = Intent(context, AlarmForegroundService::class.java)
 //        serviceIntent.putExtra("ut.cs.alarm.alarmIntent", alarmIntent)
-        serviceIntent.putExtra("ut.cs.alarm.alarm", alarm)
+        serviceIntent.putExtra(ALARM_INTENT_EXTRA_ALARM, alarm)
         serviceIntent.putExtra(
-            "ut.cs.alarm.minigameId",
+            ALARM_INTENT_EXTRA_MINIGAME_ID,
             Random.nextInt(AlarmActivity.MAX_MINIGAMES),
         )
         ContextCompat.startForegroundService(context, serviceIntent)

@@ -6,6 +6,7 @@ import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.proto.AlarmListProto
+import ee.ut.cs.alarm.data.proto.GlobalMeta
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -39,6 +40,10 @@ interface AlarmRepository {
     suspend fun getStreak(): Int
 
     suspend fun setStreak(to: Int)
+
+    suspend fun getPreviousStreak(): Int
+
+    suspend fun setPreviousStreak(to: Int)
 }
 
 class AlarmRepositoryImpl private constructor(
@@ -80,13 +85,14 @@ class AlarmRepositoryImpl private constructor(
     override suspend fun deleteAlarm(alarm: Alarm) {
         context.alarmDataStore.updateData { currentList ->
             val existingIndex = currentList.alarmsList.indexOfFirst { it.id == alarm.id.toString() }
-            if (existingIndex >= 0)
+            if (existingIndex >= 0) {
                 currentList
-                .toBuilder()
-                .removeAlarms(existingIndex)
-                .build()
-            else
+                    .toBuilder()
+                    .removeAlarms(existingIndex)
+                    .build()
+            } else {
                 currentList
+            }
         }
     }
 
@@ -101,19 +107,35 @@ class AlarmRepositoryImpl private constructor(
                 null
             }
 
+    // #region CHATGPT
     override suspend fun getStreak(): Int =
         context.alarmDataStore.data
-            .map { it.streak }
+            .map { it.meta?.streak ?: 0 }
             .first()
+            .toInt()
+
+    override suspend fun getPreviousStreak(): Int =
+        context.alarmDataStore.data
+            .map { it.meta?.previousStreak ?: 0 }
+            .first()
+            .toInt()
 
     override suspend fun setStreak(to: Int) {
-        context.alarmDataStore.updateData { currentList ->
-            currentList
-                .toBuilder()
-                .setStreak(to)
-                .build()
+        context.alarmDataStore.updateData { current ->
+            val meta = current.meta?.toBuilder() ?: GlobalMeta.newBuilder()
+            meta.streak = to
+            current.toBuilder().setMeta(meta).build()
         }
     }
+
+    override suspend fun setPreviousStreak(to: Int) {
+        context.alarmDataStore.updateData { current ->
+            val meta = current.meta?.toBuilder() ?: GlobalMeta.newBuilder()
+            meta.previousStreak = to
+            current.toBuilder().setMeta(meta).build()
+        }
+    }
+    // #endregion CHATGPT
 
     companion object {
         @Volatile

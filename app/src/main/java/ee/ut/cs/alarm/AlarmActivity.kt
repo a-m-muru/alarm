@@ -2,7 +2,6 @@ package ee.ut.cs.alarm
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
-import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
@@ -73,11 +72,12 @@ class AlarmActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Log.d("ALARM ACTIVITY", "creating alarm activity instance")
         Log.d("ALARM ACTIVITY", intent.toString())
-        val alarm = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(ALARM_INTENT_EXTRA_ALARM, Alarm::class.java)
-        } else {
-            intent.getParcelableExtra<Alarm>(ALARM_INTENT_EXTRA_ALARM)
-        }
+        val alarm =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableExtra(ALARM_INTENT_EXTRA_ALARM, Alarm::class.java)
+            } else {
+                intent.getParcelableExtra<Alarm>(ALARM_INTENT_EXTRA_ALARM)
+            }
         val gameId = intent.getIntExtra(ALARM_INTENT_EXTRA_MINIGAME_ID, -1)
         for (a in intent.extras?.keySet()!!) Log.d("ALARM ACTIVITY", "gthere is exta " + a)
         Log.d("ALARM ACTIVITY", "got minigame id " + gameId)

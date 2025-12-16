@@ -21,9 +21,19 @@ class AlarmListViewModel(
     private val _items = MutableStateFlow<List<Alarm>>(emptyList())
     val items = _items.asStateFlow()
 
+    // thanks chatgpt
+    private val _streak = MutableStateFlow(0)
+    val streak = _streak.asStateFlow()
+
+    // thanks chatgpt
+    private val _previousStreak = MutableStateFlow(0)
+    val previousStreak = _previousStreak.asStateFlow()
+
     init {
         viewModelScope.launch {
             repo.getAlarms().collect { alarms -> _items.value = alarms.sortedBy { alarm -> alarm.time } }
+            _streak.value = repo.getStreak() // gpt
+            _previousStreak.value = repo.getPreviousStreak() // gpt
         }
     }
 
@@ -47,7 +57,7 @@ class AlarmListViewModel(
         }
     }
 
-    fun updateItem(alarm: Alarm) {
+    fun updateAlarm(alarm: Alarm) {
         viewModelScope.launch {
             repo.saveAlarm(alarm)
         }
@@ -55,6 +65,24 @@ class AlarmListViewModel(
     }
 
     fun toggleEnabled(alarm: Alarm) {
-        updateItem(alarm.copy(enabled = !alarm.enabled))
+        updateAlarm(alarm.copy(enabled = !alarm.enabled))
     }
+
+    // #region thanks chatgpt
+
+    fun setStreak(value: Int) {
+        viewModelScope.launch {
+            repo.setStreak(value)
+            _streak.value = value
+        }
+    }
+
+    fun setPreviousStreak(value: Int) {
+        viewModelScope.launch {
+            repo.setPreviousStreak(value)
+            _previousStreak.value = value
+        }
+    }
+
+    // #endregion thanks chatgpt
 }

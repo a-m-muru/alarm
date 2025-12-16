@@ -13,7 +13,13 @@ message AlarmProto {
   bool enabled = 7;
 }
 
+// thanks chat gpt
+message GlobalMeta {
+  uint32 streak = 1;
+  uint32 previous_streak = 2;
+}
+
 message AlarmListProto {
   repeated AlarmProto alarms = 1;
-  int32 streak = 2;
+  GlobalMeta meta = 2;
 }
