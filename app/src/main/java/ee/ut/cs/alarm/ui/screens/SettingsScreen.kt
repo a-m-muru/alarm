@@ -77,6 +77,7 @@ fun SettingsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Checkbox(
+                        enabled = false, // TODO this is broken
                         checked = prefs.allowedTracks.contains(track),
                         onCheckedChange = {
                             if (!it) {

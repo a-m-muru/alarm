@@ -38,11 +38,48 @@ class AlarmForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val scope = this
-        val settings = runBlocking { UserPrefsRepositoryImpl.getInstance(scope).getPrefs() }
-        val songs = arrayListOf<Int>()
-        runBlocking { settings.collect { value -> value.allowedTracks.forEach { v -> songs.add(v.alarmRes) } } }
-
+        val songs =
+            intArrayOf(
+                R.raw.alarm_1,
+                R.raw.alarm_1,
+                R.raw.alarm_2,
+                R.raw.alarm_2,
+                R.raw.alarm_2,
+                R.raw.alarm_3,
+                R.raw.alarm_4,
+                R.raw.alarm_4,
+                R.raw.alarm_5,
+                R.raw.alarm_5,
+                R.raw.alarm_5,
+                R.raw.alarm_5,
+                R.raw.alarm_5,
+                R.raw.alarm_6,
+                R.raw.alarm_6,
+                R.raw.alarm_6,
+                R.raw.alarm_6,
+                R.raw.alarm_6,
+                R.raw.alarm_7,
+                R.raw.alarm_8,
+                R.raw.alarm_8,
+                R.raw.alarm_8,
+                R.raw.alarm_8,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_10,
+                R.raw.alarm_10,
+                R.raw.alarm_10,
+                R.raw.alarm_10,
+                R.raw.alarm_11,
+                R.raw.alarm_11,
+                R.raw.alarm_11,
+                R.raw.alarm_11,
+            )
+        // TODO account for settings here
         if (songs.size > 0) { // gpt
             mediaPlayer = MediaPlayer.create(this, songs[Random.nextInt(songs.size)])
             // https://stackoverflow.com/a/78187672
