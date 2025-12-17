@@ -17,6 +17,9 @@ fun currentDayIntUtc(): Int {
     return year * 10000 + month * 100 + day
 }
 
+/**
+ * class for a 2 dimensional vector
+ */
 class Vec2(
     var x: Float,
     var y: Float,
@@ -35,11 +38,23 @@ class Vec2(
 
     operator fun times(mul: Float): Vec2 = Vec2(x * mul, y * mul)
 
+    /**
+     * Calculates the distance between this vector and another vector.
+     * @param v The other vector.
+     * @return The distance between the vectors
+     */
     fun distanceTo(v: Vec2): Float = sqrt((x - v.x).toDouble().pow(2) + (y - v.y).toDouble().pow(2)).toFloat()
 
+    /**
+     * Calculates the length of the vector.
+     * @return The length of the vector
+     */
     fun length(): Float = sqrt(x.toDouble().pow(2) + y.toDouble().pow(2)).toFloat()
 }
 
+/**
+ * class for a 3 dimensional vector
+ */
 data class Vec3(var x: Float, var y: Float, var z: Float) {
     operator fun plus(other: Vec3): Vec3 {
         return Vec3(x + other.x, y + other.y, z + other.z)
@@ -53,17 +68,36 @@ data class Vec3(var x: Float, var y: Float, var z: Float) {
     operator fun div(scalar: Float): Vec3 {
         return Vec3(x / scalar, y / scalar, z / scalar)
     }
+
+    /**
+     * Calculates the length of the vector.
+     */
     fun length(): Float {
         return sqrt(x.pow(2) + y.pow(2) + z.pow(2))
     }
+
+    /**
+     * Normalizes the vector to have a length of 1.
+     * @return The normalized vector.
+     */
     fun normalize(): Vec3 {
         val len = length()
         return Vec3(x / len, y / len, z / len)
     }
+
+    /**
+     * Converts the vector to a float array.
+     * @return The float array representation of the vector.
+     */
     fun toFloatArray(): FloatArray {
         return floatArrayOf(x, y, z)
     }
 
+    /**
+     * Calculates the distance between this vector and another vector.
+     * @param other The other vector.
+     * @return The distance between the vectors.
+     */
     fun distance(other: Vec3): Float {
         val dx = x - other.x
         val dy = y - other.y

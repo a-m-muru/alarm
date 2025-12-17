@@ -58,6 +58,10 @@ import kotlin.random.Random
 // https://proandroiddev.com/classic-snake-game-with-jetpack-compose-2b78f4892ca
 // https://medium.com/autodesk-tlv/how-to-write-games-for-android-and-ios-with-kotlin-in-jetpack-compose-b9ac35514238
 
+/**
+ * Game engine class that handles the game logic.
+ * @constructor Creates a new GameEngine object.
+ */
 class GameEngine {
     companion object {
         lateinit var bounceSound: MediaPlayer
@@ -76,6 +80,10 @@ class GameEngine {
     var balls = mutableStateListOf<Ball>()
     var holes = mutableStateListOf<Hole>()
 
+    /**
+     * Starts the game.
+     * @param ctx The context of the game.
+     */
     fun startGame(ctx: Context) {
         balls.clear()
         holes.clear()
@@ -139,6 +147,10 @@ class GameEngine {
         }
     }
 
+    /**
+     * Updates the game state.
+     * @param time The current time.
+     */
     fun update(time: Long) {
         val delta = time - prevTime
         val deltaT = (delta / 1E9).toFloat()
@@ -178,6 +190,10 @@ class GameEngine {
     override fun toString(): String = "balls: " + balls + "; time: ${(totalTime / 1E8).roundToInt() / 10f}, orientation: $rotation"
 }
 
+/**
+ * Hole class that represents a hole in the game.
+ * @constructor Creates a new Hole object.
+ */
 class Hole(
     pos: Vec2,
     radius: Float,
@@ -186,6 +202,10 @@ class Hole(
     var radius by mutableStateOf(radius)
 }
 
+/**
+ * Ball class that represents a ball in the game.
+ * @constructor Creates a new Ball object.
+ */
 class Ball(
     pos: Vec2,
     radius: Float,
@@ -203,6 +223,9 @@ class Ball(
     var pos by mutableStateOf(pos)
     var radius by mutableStateOf(radius)
 
+    /**
+     * Bounces the ball.
+     */
     fun bounce() {
         if (GameEngine.bounceSound.isPlaying) {
             GameEngine.bounceSound.seekTo(0)
@@ -212,6 +235,11 @@ class Ball(
         rotaVel += Random.nextFloat() * 60 - 30
     }
 
+    /**
+     * Updates the ball position.
+     * @param deltaT The time delta.
+     * @param engine The game engine.
+     */
     fun update(
         deltaT: Float,
         engine: GameEngine,
@@ -269,6 +297,9 @@ class Ball(
 val Ball.xOffset: Dp get() = pos.x.dp - radius.dp
 val Ball.yOffset: Dp get() = pos.y.dp - radius.dp
 
+/**
+ * Balance hole game screen.
+ */
 @Composable
 fun BalanceHole(onNavigateBack: () -> Unit) {
     val gameEngine = remember { GameEngine() }
@@ -404,6 +435,10 @@ fun BalanceHole(onNavigateBack: () -> Unit) {
     }
 }
 
+/**
+ * Draws a ball.
+ * @param ball The ball to draw.
+ */
 @Composable
 fun DrawBall(ball: Ball) {
     val size = ball.radius.dp
@@ -417,6 +452,10 @@ fun DrawBall(ball: Ball) {
     }
 }
 
+/**
+ * Draws a hole.
+ * @param hole The hole to draw.
+ */
 @Composable
 fun DrawHole(hole: Hole) {
     val size = hole.radius.dp

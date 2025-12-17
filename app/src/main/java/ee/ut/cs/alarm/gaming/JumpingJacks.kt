@@ -32,6 +32,9 @@ import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.Vec3
 
+/**
+ * Jumping jacks game screen.
+ */
 @Composable
 fun JumpingJacks(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
