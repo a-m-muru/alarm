@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.Vec2
+import ee.ut.cs.alarm.Vec3
 import kotlin.math.round
 import kotlin.math.roundToInt
 import kotlin.math.sign

@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.Vec3
-import ee.ut.cs.alarm.ui.components.FilteredImage
 
 @Composable
 fun JumpingJacks(onNavigateBack: () -> Unit) {
