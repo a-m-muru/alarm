@@ -26,6 +26,9 @@ You set the alarm, the alarm rings until you complete the game, then you can dis
 ## Limitations and improvements
 * uses media volume not alarm volume
 
+## larger report file
+[alarm++ final report.pdf](https://github.com/user-attachments/files/24213142/alarm%2B%2B.final.report.pdf)
+
 ## Demo videos (volume warning)
 
 create alarm  
