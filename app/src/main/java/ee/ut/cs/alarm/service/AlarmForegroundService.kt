@@ -37,8 +37,48 @@ class AlarmForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        // gept chat
-        val songs = intArrayOf(R.raw.alarm_1, R.raw.alarm_3)
+        val songs =
+            intArrayOf(
+                R.raw.alarm_1,
+                R.raw.alarm_1,
+                R.raw.alarm_2,  
+                R.raw.alarm_2,
+                R.raw.alarm_2,
+                R.raw.alarm_3,
+                R.raw.alarm_4,
+                R.raw.alarm_4,
+                R.raw.alarm_5,
+                R.raw.alarm_5,
+                R.raw.alarm_5,
+                R.raw.alarm_5,
+                R.raw.alarm_5,
+                R.raw.alarm_6,
+                R.raw.alarm_6,
+                R.raw.alarm_6,
+                R.raw.alarm_6,
+                R.raw.alarm_6,
+                R.raw.alarm_7,
+                R.raw.alarm_8,
+                R.raw.alarm_8,
+                R.raw.alarm_8,
+                R.raw.alarm_8,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_9,
+                R.raw.alarm_10,
+                R.raw.alarm_10,
+                R.raw.alarm_10,
+                R.raw.alarm_10,
+                R.raw.alarm_11,
+                R.raw.alarm_11,
+                R.raw.alarm_11,
+                R.raw.alarm_11,
+            )
+        // gpt
         mediaPlayer = MediaPlayer.create(this, songs[Random.nextInt(songs.size)])
         // https://stackoverflow.com/a/78187672
         mediaPlayer?.setAudioAttributes(

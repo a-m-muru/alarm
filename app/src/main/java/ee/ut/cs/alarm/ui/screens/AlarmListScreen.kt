@@ -209,7 +209,7 @@ fun StreakBox(
     Log.d("StreakBox", "streak: $streak, prev: $previousStreak")
     var increased by remember { mutableStateOf(false) }
     increased = streak > previousStreak
-    val primColor = MaterialTheme.colorScheme.primary
+    val primColor = MaterialTheme.colorScheme.inversePrimary
     val color =
         when {
             increased -> Color(0xFF4CAF50) // green

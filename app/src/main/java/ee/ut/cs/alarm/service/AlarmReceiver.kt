@@ -22,7 +22,7 @@ import kotlinx.coroutines.runBlocking
 import kotlin.random.Random
 
 class AlarmReceiver : BroadcastReceiver() {
-    // my heartfelt gratitude to CHAT GEPT
+    // my heartfelt gratitude to CHAT GPT
     override fun onReceive(
         context: Context,
         intent: Intent,
