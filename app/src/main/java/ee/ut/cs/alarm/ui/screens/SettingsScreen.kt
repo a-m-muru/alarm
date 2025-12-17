@@ -1,10 +1,11 @@
 package ee.ut.cs.alarm.ui.screens
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Checkbox
@@ -36,7 +37,7 @@ import ee.ut.cs.alarm.ui.viewmodel.UserPrefsViewModel
 @Composable
 fun SettingsScreen(
     vm: UserPrefsViewModel,
-    onNavigation: (String) -> Unit
+    onNavigation: (String) -> Unit,
 ) {
     val prefs by vm.prefs.collectAsState()
 
@@ -54,55 +55,71 @@ fun SettingsScreen(
                     }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Go back")
                     }
-                }
+                },
             )
-        }
-    ){ padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
+        },
+    ) { padding ->
+        LazyColumn(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(padding),
         ) {
-            Text("Allowed tracks:", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            AlarmTrack.entries.forEach { track ->
+            item {
+                Text("Allowed tracks:", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            }
+            items(AlarmTrack.entries) { track ->
                 Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Checkbox(
                         checked = prefs.allowedTracks.contains(track),
                         onCheckedChange = {
-                            if (!it)
+                            if (!it) {
                                 vm.updatePrefs(prefs.copy(allowedTracks = prefs.allowedTracks - track))
-                            else
+                            } else {
                                 vm.updatePrefs(prefs.copy(allowedTracks = prefs.allowedTracks + track))
-                        }
+                            }
+                        },
                     )
                     Text(track.value)
                 }
             }
 
-            Text("Allowed games:", modifier = Modifier.padding(top = 16.dp), fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            AlarmGame.entries.forEach { game ->
+            item {
+                Text(
+                    "Allowed games:",
+                    modifier = Modifier.padding(top = 16.dp),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            items(AlarmGame.entries) { game ->
                 Row(
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Checkbox(
+                        enabled = false,
                         checked = prefs.allowedGames.contains(game),
                         onCheckedChange = {
-                            if (!it)
+                            if (!it) {
                                 vm.updatePrefs(prefs.copy(allowedGames = prefs.allowedGames - game))
-                            else
+                            } else {
                                 vm.updatePrefs(prefs.copy(allowedGames = prefs.allowedGames + game))
-                        }
+                            }
+                        },
                     )
                     Text(game.value)
                 }
             }
-
         }
     }
 }

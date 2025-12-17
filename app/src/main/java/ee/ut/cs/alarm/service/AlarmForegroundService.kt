@@ -26,6 +26,7 @@ import ee.ut.cs.alarm.currentDayIntUtc
 import ee.ut.cs.alarm.data.Alarm
 import ee.ut.cs.alarm.data.repo.AlarmRepository
 import ee.ut.cs.alarm.data.repo.AlarmRepositoryImpl
+import ee.ut.cs.alarm.data.repo.UserPrefsRepositoryImpl
 import kotlinx.coroutines.runBlocking
 import java.text.DateFormat
 import java.util.Calendar
@@ -37,63 +38,27 @@ class AlarmForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        val songs =
-            intArrayOf(
-                R.raw.alarm_1,
-                R.raw.alarm_1,
-                R.raw.alarm_2,  
-                R.raw.alarm_2,
-                R.raw.alarm_2,
-                R.raw.alarm_3,
-                R.raw.alarm_4,
-                R.raw.alarm_4,
-                R.raw.alarm_5,
-                R.raw.alarm_5,
-                R.raw.alarm_5,
-                R.raw.alarm_5,
-                R.raw.alarm_5,
-                R.raw.alarm_6,
-                R.raw.alarm_6,
-                R.raw.alarm_6,
-                R.raw.alarm_6,
-                R.raw.alarm_6,
-                R.raw.alarm_7,
-                R.raw.alarm_8,
-                R.raw.alarm_8,
-                R.raw.alarm_8,
-                R.raw.alarm_8,
-                R.raw.alarm_9,
-                R.raw.alarm_9,
-                R.raw.alarm_9,
-                R.raw.alarm_9,
-                R.raw.alarm_9,
-                R.raw.alarm_9,
-                R.raw.alarm_9,
-                R.raw.alarm_10,
-                R.raw.alarm_10,
-                R.raw.alarm_10,
-                R.raw.alarm_10,
-                R.raw.alarm_11,
-                R.raw.alarm_11,
-                R.raw.alarm_11,
-                R.raw.alarm_11,
-            )
-        // gpt
-        mediaPlayer = MediaPlayer.create(this, songs[Random.nextInt(songs.size)])
-        // https://stackoverflow.com/a/78187672
-        mediaPlayer?.setAudioAttributes(
-            AudioAttributes
-                .Builder()
-                .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
-                .setLegacyStreamType(
-                    AudioManager.STREAM_ALARM,
-                ).setUsage(AudioAttributes.USAGE_ALARM)
-                .setContentType(
-                    AudioAttributes.CONTENT_TYPE_SONIFICATION,
-                ).build(),
-        )
-        mediaPlayer?.isLooping = true
+        val scope = this
+        val settings = runBlocking { UserPrefsRepositoryImpl.getInstance(scope).getPrefs() }
+        val songs = arrayListOf<Int>()
+        runBlocking { settings.collect { value -> value.allowedTracks.forEach { v -> songs.add(v.alarmRes) } } }
 
+        if (songs.size > 0) { // gpt
+            mediaPlayer = MediaPlayer.create(this, songs[Random.nextInt(songs.size)])
+            // https://stackoverflow.com/a/78187672
+            mediaPlayer?.setAudioAttributes(
+                AudioAttributes
+                    .Builder()
+                    .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
+                    .setLegacyStreamType(
+                        AudioManager.STREAM_ALARM,
+                    ).setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(
+                        AudioAttributes.CONTENT_TYPE_SONIFICATION,
+                    ).build(),
+            )
+            mediaPlayer?.isLooping = true
+        }
         vibrator = getSystemService(VIBRATOR_SERVICE) as Vibrator?
     }
 
