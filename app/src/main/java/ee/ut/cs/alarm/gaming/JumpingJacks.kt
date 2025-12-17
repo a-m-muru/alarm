@@ -31,8 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ee.ut.cs.alarm.R
 import ee.ut.cs.alarm.Vec3
-import ee.ut.cs.alarm.ui.components.FilteredImage
+//import ee.ut.cs.alarm.ui.components.FilteredImage
 
+/**
+ * Jumping jacks game screen.
+ */
 @Composable
 fun JumpingJacks(onNavigateBack: () -> Unit) {
     val context = LocalContext.current

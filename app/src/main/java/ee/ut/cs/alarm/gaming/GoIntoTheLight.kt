@@ -35,6 +35,11 @@ import ee.ut.cs.alarm.R
 
 val WAIT_MINUTES_BEFORE_GRANTING_MERCY_IF_CANT_REACH_REQUIRED_LIGHT_LEVEL = 5
 
+/**
+ * Calculates the required light amount.
+ * @param initialLight The initial light amount.
+ * @param secondsPassed The seconds passed.
+ */
 private fun calculateRequiredLightAmount(
     initialLight: Float,
     secondsPassed: Float,
@@ -43,6 +48,9 @@ private fun calculateRequiredLightAmount(
         (secondsPassed / (WAIT_MINUTES_BEFORE_GRANTING_MERCY_IF_CANT_REACH_REQUIRED_LIGHT_LEVEL * 60f))
             .coerceAtLeast(0f)
 
+/**
+ * Enter the light game screen.
+ */
 @Composable
 fun GoIntoTheLight(onNavigateBack: () -> Unit) {
     val context = LocalContext.current
