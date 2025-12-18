@@ -48,3 +48,17 @@ OR
 
 ## Usage
 https://github.com/user-attachments/assets/6aa84d9f-a647-42c4-a8b6-ab48ec7d4ad4
+
+## Project
+- app
+  - build.gradle.kts (Project build configs)
+  - src
+    - main
+      - java/ee.ut.cs.alarm
+        - MainActivty
+      - res (Assests)
+      - proto (Proto Datastore configs)
+    - test (Unit tests to test logic)
+    - androidTest (UI tests)
+- docs (Documentation)
+- step*_report.md (Reports about development steps)
