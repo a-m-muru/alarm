@@ -33,3 +33,18 @@ Simple alarm clock android app to help you ward off sleep for good 😈.
 - Kotlin
 - Android Studio
 - Jetpack Compose
+
+## Installation
+
+- Go to [releases](https://github.com/a-m-muru/alarm/releases)
+- Download latest APK
+- Install on Android device
+
+OR
+
+- Clone the repository
+- Compile your own APK
+- Install on Android device
+
+## Usage
+https://github.com/user-attachments/assets/6aa84d9f-a647-42c4-a8b6-ab48ec7d4ad4
