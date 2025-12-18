@@ -31,24 +31,30 @@ You set the alarm, the alarm rings until you complete the game, then you can dis
 
 ## Demo videos (volume warning)
 
-create alarm  
+create alarm
+
 https://github.com/user-attachments/assets/6d2433a9-9ce6-439a-b816-bdf630226eb4
 
-edit alarm  
+edit alarm
+
 https://github.com/user-attachments/assets/038ec47d-dada-4ef5-bbd1-c0178ee7ccc3
 
-camera color selecting game  
+camera color selecting game
+
 https://github.com/user-attachments/assets/ca737405-2241-49ee-8d65-cd74f08361a7
 
-ball rolling game  
+ball rolling game
+
 https://github.com/user-attachments/assets/c86b8806-b99d-45ef-a0e3-0473bd12e0c5
 
-loosing streak  
+loosing streak
+
 https://github.com/user-attachments/assets/e8feb496-72af-471e-a12f-99b7ea68c40f
 
-get streak  
+get streak
+
 https://github.com/user-attachments/assets/a7f425e9-b2f5-4a55-a70d-a21ae42ecdda
 
-starting from backround  
-https://github.com/user-attachments/assets/6fcec40e-34f0-4126-bf8b-5bf6a8fd6319
+starting from backround
 
+https://github.com/user-attachments/assets/d5322f38-6920-4100-9cf3-3d6eedfc9890
